@@ -661,36 +661,66 @@ html.js .scroll-track .scroll-track__truck{left:2px;transform:translateX(calc(va
 /* the first screen holds the whole stage: subtract the parody line (and the header's 1px rule) too, so the
    "[reverent silence]" cue is no longer cut by the fold (the stage is laid out from the hero's middle) */
 #hero{min-height:max(calc(100svh - var(--nav-h) - var(--parody-h,30px)),720px)}
-/* short laptop screens (1366x768, 1280x720, 1024x768, down to about 700px tall): the hero follows the screen
-   down to 600px instead of stopping at 720px, so the cue and both caption lines sit above the fold. Against the
-   720px layout the copy moves down .35 x the squeeze (--hero-s) and the stage, truck and caption lines rise .35 x
-   it; those move as one (zoomed too), so the zoom pills stay beside the truck. The headline is capped at 28% of the
-   screen height so it never crowds the eyebrow. Screens 814px tall and up (1440x900) get --hero-s 0: unchanged.
-   Phones and tablets (860px and narrower, where the zoom pills sit under the buttons) keep the 720px floor. */
+/* short laptop screens (1024x768, and 1366x768 or 1280x720 screens, where the browser's own bars leave about
+   1366x657 or 1280x610): the hero follows the screen down to 500px instead of stopping at 720px, so the cue and
+   both caption lines sit above the fold. Against the 720px layout the copy moves down .35 x the squeeze (--hero-s)
+   and the stage, truck and caption lines rise .35 x it; those move as one (zoomed too), so the zoom pills stay
+   beside the truck. Screens 814px tall and up (1440x900) get --hero-s 0: unchanged. */
 @media (min-width:861px){
-  #hero{--hero-s:clamp(0px,720px - (100svh - var(--nav-h) - var(--parody-h,30px)),120px);
-    min-height:max(calc(100svh - var(--nav-h) - var(--parody-h,30px)),600px)}
+  #hero{--hero-s:clamp(0px,720px - (100svh - var(--nav-h) - var(--parody-h,30px)),220px);
+    min-height:max(calc(100svh - var(--nav-h) - var(--parody-h,30px)),500px)}
   #hero .hero-copy{translate:0 calc(.35 * var(--hero-s))}
   #hero .hero-stage,#hero .hero-caption,#hero .hero-under{translate:0 calc(-.35 * var(--hero-s))}
-  #hero .hero-title{font-size:clamp(56px,min(17vw,28svh),240px)}
 }
+/* the headline is capped at 28% of the screen height, so it never crowds the eyebrow on short laptop screens and a
+   phone held sideways keeps both buttons above the fold */
+#hero .hero-title{font-size:clamp(56px,min(17vw,28svh),240px)}
+@media (max-width:700px){#hero .hero-title{font-size:min(max(56px,22vw),28svh)}}
+/* phones and tablets (860px and narrower) follow the screen too, down to 460px: with the 720px floor the truck,
+   both caption lines and the cue fell below the fold on short phones (375x667, 360x640, 320x568) and on most
+   phones in Safari, whose toolbars leave about 664px of a 390x844 iPhone and 548px of a 375x667 SE. Against the
+   720px layout the copy moves down .2 x the squeeze (--hero-p), and the stage, truck and caption lines rise .5 x it
+   plus up to 25px more, which leaves room under the truck for the zoom pills (below). Screens 806px tall and up
+   get --hero-p 0: unchanged. */
+@media (max-width:860px){
+  #hero{--hero-p:clamp(0px,720px - (100svh - var(--nav-h) - var(--parody-h,30px)),260px);
+    min-height:max(calc(100svh - var(--nav-h) - var(--parody-h,30px)),460px)}
+  #hero .hero-copy{translate:0 calc(.2 * var(--hero-p))}
+  #hero .hero-stage,#hero .hero-caption,#hero .hero-under{translate:0 calc(-.5 * var(--hero-p) - min(var(--hero-p),25px))}
+  /* zoomed, the pills sit in the top wedge under the buttons (style-ui.css), so they move with the copy */
+  #hero.is-zoomed .hero-caption,#hero.is-zoomed .hero-under{translate:0 calc(.2 * var(--hero-p))}
+}
+/* zoomed on short phones the top wedge is too low for the pills, so they go under the truck, where the unzoomed
+   lines sit, over the X's lower arms: the caption pill grows down from the caption's place and the under-line
+   pill leaves room for a two-line caption above it */
+@media (max-width:860px) and (max-height:805px){
+  #hero.is-zoomed .hero-caption{top:calc(50% + 253px);bottom:auto;transform:translateX(-50%)}
+  #hero.is-zoomed .hero-under{top:calc(50% + 306px);bottom:auto}
+  #hero.is-zoomed .hero-caption,#hero.is-zoomed .hero-under{translate:0 calc(-.5 * var(--hero-p) - min(var(--hero-p),25px))}
+  /* here the X's upper arms also reach the subline at 1,600%: it gets a stage-black pill, drawn with box-shadows so
+     nothing moves */
+  #hero.is-zoomed .hero-sub{border-radius:12px;background:var(--stage);
+    box-shadow:0 0 0 4px var(--stage),-10px 0 0 4px var(--stage),10px 0 0 4px var(--stage)}
+}
+/* zoomed, the zoom button gets a stage-black fill: on short screens (phones, and laptops like 1280x610) the X's
+   upper arms reach the button row at 1,600% */
+#hero.is-zoomed .btn--ghost:not(:hover){background:var(--stage)}
+/* a two-line zoom caption breaks into even lines (no lone "consistency." at 1366x768) */
+#hero.is-zoomed .hero-caption{text-wrap:balance}
 /* balanced eyebrow and subline: no lone "TRUCK" or "up." on its own line at phone width */
 #hero .eyebrow,#hero .hero-sub{text-wrap:balance}
 /* zoomed: the cue gets the same dark pill as the caption lines, so it stays readable where the giant X's lower
    arm runs under it (1,600% on 320-360px phones) */
 #hero.is-zoomed .hero-cue{padding:2px 8px;margin-right:-8px;border-radius:10px;background:var(--stage)}
-/* zoomed on 360px phones and narrower: both buttons stay on one row (smaller type and padding). At 1,600% (and
-   at 400% under 341px) they wrapped to 2 rows and left the caption pill about 7px under them. */
-@media (max-width:360px){
-  #hero.is-zoomed .btn-row{column-gap:8px}
-  #hero.is-zoomed .btn-row .btn{padding:0 12px;font-size:14px}
-}
+/* both hero buttons stay on one row in every zoom state, so the row never wraps or unwraps under the finger: the
+   zoom labels ("Zoom in more ›", "Zoom back out ›") are shorter than "Find it on stage ›", and on 340px phones
+   and narrower the buttons have smaller type and padding from the start (they used to switch on the first tap) */
 @media (max-width:340px){
-  #hero.is-zoomed .btn-row .btn{padding:0 10px;font-size:13px}
+  #hero .btn-row{column-gap:8px}
+  #hero .btn-row .btn{padding:0 10px;font-size:13px}
 }
-/* zoomed on 361-380px phones the 1,600% buttons still wrap to 2 rows, so the caption pill drops its tracking to
-   stay on one line; its top then clears the buttons by about 25px. On 341-359px it also goes to 12px
-   (340px and narrower keep style-ui's 12px rule) */
+/* zoomed on 361-380px phones the caption pill drops its tracking, so the 1,600% caption stays on one line.
+   On 341-359px it also goes to 12px (340px and narrower keep style-ui's 12px rule) */
 @media (min-width:341px) and (max-width:380px){
   #hero.is-zoomed .hero-caption{letter-spacing:0;padding:4px 8px}
 }
@@ -2469,7 +2499,7 @@ html header.site-header .nav-pill{font-size:12px}
     if (!btn || !truck) return;
     var steps = [
       { z: 4, cap: 'Zoomed in 400%. Still actual size. That’s consistency.', label: 'Zoom in more ›' },
-      { z: 16, cap: 'Zoomed in 1,600%. Truck holding steady.', label: 'Back to the whole stage ›' },
+      { z: 16, cap: 'Zoomed in 1,600%. Truck holding steady.', label: 'Zoom back out ›' },
       { z: 1, cap: 'Back to actual size. It never left.', label: 'Find it on stage ›' }
     ];
     var step = -1, zoom = 1, raf = 0, tween = null;
@@ -3160,6 +3190,8 @@ html header.site-header .nav-pill{font-size:12px}
       'dirt': { item: 'Dirt', v: 'Yes.', d: 'It’s like the perfect vehicle for moving dirt from one side of the yard to another. Fence in the way? Just pick it up and put it on the other side.', t: 'Fence Mode: ready', m: 1, s: 'dirt', chip: 'dirt' },
       'small-things': { item: 'Other small things', v: 'Yes.', d: 'This is what it’s for: a truck bed you can load other small things into. Super cute.', t: 'Built for this', m: 1, s: 'small', chip: 'small-things' },
       'kid-2': { item: 'Kid #2', v: 'Absolutely not.', d: 'One kid can ride in the seat next to you. The second kid does not go in the bed. Not ever, not for one block. Kids ride buckled in real seats; the bed is for dirt, chairs and half a 2x4.', t: 'Fine print: enforced', m: 'no', s: 'kid', chip: 'kid-2' },
+      // babies and toddlers: the deck's Kid #2 answer with the car-seat rule as its last sentence, played straight
+      'kid-baby': { item: 'Kid #2', v: 'Absolutely not.', d: 'One kid can ride in the seat next to you. The second kid does not go in the bed. Not ever, not for one block. Babies and toddlers ride in a car seat, never in front of an active airbag; the bed is for dirt, chairs and half a 2x4.', t: 'Fine print: enforced', m: 'no', s: 'kid', chip: 'kid-2' },
       'family': { item: 'Visiting family (2+)', v: 'Uber.', d: 'There’s more than one, so they’ll know they need to get an Uber. No more of those annoying trips to the airport.', t: 'Airport runs: retired', m: 4, s: 'uber', chip: 'family' },
       'one-relative': { item: 'One relative', v: 'Technically.', d: 'A party of one fits in the seat next to you. We’d keep that quiet. Two or more, and they’ll know they need to get an Uber.', t: 'Party of one: pending', m: 1, s: 'seat' },
       'pet': { item: 'Pet', v: 'Up front.', d: 'Pets ride secured in the cab, not in the bed. The bed is for dirt and chairs.', t: 'Cab only', m: 1, s: 'paw' },
@@ -3252,10 +3284,14 @@ html header.site-header .nav-pill{font-size:12px}
     /* Safety first: every group about people, kids or pets is checked before any cargo group, so a sentence
        that names a person next to dirt or chairs never gets a "fits" verdict. */
     var GROUPS = [
-      ['kid-2', ['kid', 'child', 'children', 'baby', 'toddler', 'son', 'daughter', '=twins', 'teen', 'teenager', 'kiddo', 'infant', 'newborn', 'boy', 'girl', 'tween', 'preteen',
+      ['kid-baby', ['baby', 'toddler', 'infant', 'newborn']],
+      ['kid-2', ['kid', 'child', 'children', 'son', 'daughter', '=twins', 'teen', 'teenager', 'kiddo', 'boy', 'girl', 'tween', 'preteen',
         'grandkid', 'grandchild', 'grandchildren', 'grandson', 'granddaughter', 'nephew', 'niece', 'stepson', 'stepdaughter', 'stepkid', 'triplets']],
       ['pet', ['dog', 'cat', 'puppy', 'kitten', 'pet', 'pup', 'doggo', 'doggy', 'pooch', 'kitty', 'bunny', 'rabbit', 'hamster', 'guinea pig', 'ferret', 'bird', 'parrot', 'horse', 'pony',
-        'goat', 'pig', 'turtle', 'tortoise', 'lizard', 'snake', 'fish', 'goldfish', 'animal', 'retriever', 'labrador', 'poodle', 'terrier', 'corgi', 'pug', 'beagle', 'husky', 'chihuahua', 'dachshund']],
+        'goat', 'pig', 'turtle', 'tortoise', 'lizard', 'snake', 'fish', 'goldfish', 'animal', 'retriever', 'labrador', 'poodle', 'terrier', 'corgi', 'pug', 'beagle', 'husky', 'chihuahua', 'dachshund',
+        'chicken', 'hen', 'rooster', 'duck', 'goose', '=geese', 'cow', '=cattle', 'calf', '=calves', 'sheep', 'lamb', 'donkey', 'llama', 'alpaca', 'mouse', '=mice', 'rat', 'gerbil',
+        'chinchilla', 'hedgehog', 'gecko', 'iguana', 'frog', 'mutt', 'hound', 'shepherd', 'doodle', 'goldendoodle', 'labradoodle', 'bulldog', 'pitbull', 'pit bull', 'rottweiler',
+        'collie', 'spaniel', 'greyhound', 'dalmatian', 'yorkie', 'pomeranian', 'schnauzer', 'doberman', 'shih tzu']],
       ['family', ['family', '=parents', '=in-laws', '=in laws', '=inlaws', '=relatives', '=cousins', '=grandparents', 'everyone', 'airport', 'uber', '=guests', 'visiting family',
         'everybody', '=people', '=men', '=women', '=folks', 'crowd', 'team', 'squad', 'crew']],
       ['one-relative', null],
@@ -3307,8 +3343,22 @@ html header.site-header .nav-pill{font-size:12px}
       for (var e = 0; e < EMOJI.length; e++) s = s.replace(EMOJI[e][0], EMOJI[e][1]);
       return s;
     }
+    // An age is a kid: "my 2 year old", "a three-year-old", "10yo" (up to 17), and "a six-month-old" is a baby.
+    // A pet's age is left alone, so "an 8 week old puppy" and "a 2 year old golden retriever" still ride up front.
+    var PET_WORDS = GROUPS.filter(function (G) { return G.key === 'pet'; })[0].terms
+      .filter(function (term) { return term.words.length === 1; }).map(function (term) { return term.words[0]; });
+    var AGE = new RegExp('\\b(\\d{1,2}|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen)' +
+      '[\\s-]*(?:(week|wk|month|mo|year|yr)s?[\\s-]*olds?|(yo)s?)\\b(?=(?:[\\s,]+([a-z]+))?(?:[\\s-]+([a-z]+))?)', 'g');
+    function ages(low) {
+      return low.replace(AGE, function (m, n, unit, yo, a, b) {
+        var pet = function (w) { return !!w && PET_WORDS.indexOf(singular(w)) > -1; };
+        if (pet(a) || (!/^(and|with|plus|or)$/.test(a || '') && pet(b))) return m;
+        if (yo || unit === 'year' || unit === 'yr') return +n > 17 ? m : ' kid ';
+        return ' baby ';
+      });
+    }
     function classify(text) {
-      var low = deEmoji(String(text).slice(0, 400)).toLowerCase().trim();
+      var low = ages(deEmoji(String(text).slice(0, 400)).toLowerCase().trim());
       var toks = tokenize(low);
       // "twin" on its own is a person (a sibling); next to bed words it is a mattress size.
       if (!/\b(mattress|bed|beds|bedding|size|sheets?|xl|bunk|frame)\b/.test(low)) toks = toks.map(function (t) { return t === 'twin' ? 'sibling' : t; });
