@@ -102,6 +102,15 @@
 .art-frame > svg{display:block;width:100%;height:auto;overflow:visible}
 @media (max-width:700px){ .art-frames{grid-template-columns:1fr} }
 
+/* ===== Art lane follow-up 3a: phone chip rows under cropped stage frames =====
+   On phones a crop-4x3 frame keeps about 45px of bare stage floor under its lit card, so the default 14px gap
+   left each chip row floating nearer the next frame than its own. Tuck the row up into that floor and give the
+   stacked frames more air. (#one-more-thing sets the same numbers in src/style-x-r3.css.) */
+@media (max-width:700px){
+  .art-frames:has(> .art-frame > svg.crop-4x3){gap:44px}
+  .art-frame > svg.crop-4x3 + .art-labels{margin-top:-20px}
+}
+
 /* fun size. page layout + type. Palette and drawing classes come from art/art.css (never redefined here). */
 :root{
   --nav-h:64px;
@@ -485,13 +494,24 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
 /* reveal-on-scroll: style.css owns .reveal / .is-in; blocks that enter together are staggered */
 @media (prefers-reduced-motion:no-preference){html.js .reveal{transition-delay:var(--rd,0ms)}}
 
-/* the status line flips about its top edge */
-[data-anim="fit-updated"]{transform-origin:50% 0}
+/* the status line flips about its top edge. app-scenes.js wraps each sentence in .fs-nowrap, so on phones
+   it breaks between sentences ("Fit Engine updated." / "2x4s now supported. Halved."), never inside one,
+   and the two-line pill hugs its words */
+[data-anim="fit-updated"]{transform-origin:50% 0;text-wrap:balance}
+[data-anim="fit-updated"] .fs-nowrap{white-space:nowrap}
+@media (max-width:480px){
+  #one-more-thing .status-line{border-radius:16px}
+  #one-more-thing .status-line .fs-nowrap:first-child{display:block}
+}
 
-/* hero zoom gag: while the X balloons under the caption lines, they sit on stage-black pills */
+/* hero zoom gag: while the X balloons under the caption lines, they sit on stage-black pills.
+   A pill adds 4px of padding, so its box moves up 4px and the words stay exactly where they were. */
 .hero.is-zoomed .hero-caption,.hero.is-zoomed .hero-under{left:50%;right:auto;width:max-content;max-width:calc(100% - 32px);padding:4px 14px;border-radius:14px;background:var(--stage);transform:translateX(-50%)}
-/* a caption that wraps (phones) grows upward over the X instead of down into the line under it */
-.hero.is-zoomed .hero-caption{top:auto;bottom:calc(50% - 289px)}
+.hero.is-zoomed .hero-caption{top:calc(50% + 253px)}
+.hero.is-zoomed .hero-under{top:calc(50% + 289px)}
+/* a caption that wraps (phones) grows upward over the X instead of down into the line under it: the pill's
+   bottom stays where a one-line pill's bottom is (1lh + 4px below the caption's resting top) */
+@supports (top:1lh){.hero.is-zoomed .hero-caption{top:calc(50% + 261px + 1lh);transform:translate(-50%,-100%)}}
 
 /* fun size. UI layer (app-ui.js): phone menu, Reserve toast, FAQ, and the Will it fit? states.
    Colors come from art.css tokens only. Every animation sits under prefers-reduced-motion: no-preference;
@@ -558,40 +578,49 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
 @keyframes fs-flip{from{opacity:.2;transform:perspective(240px) rotateX(90deg)}to{opacity:1;transform:none}}
 @keyframes fs-faq-open{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 
-/* style-x-a11y.css: accessibility lane for "fun size." Contrast, text-size floors and visually hidden captions.
-   Fixes only: palette tokens from art/art.css, no animation rules. Checked by test-a11y-audit.js.
-   Other style-x-* files sort after this one, so overrides of their rules carry a leading "html" / "html body". */
-
-/* Visually hidden, still read by screen readers (the compare and spec table captions). */
-.a11y-sr{position:absolute!important;width:1px!important;height:1px!important;margin:-1px!important;padding:0!important;
-  border:0!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;clip-path:inset(50%)!important;white-space:nowrap!important}
-
-/* (No scroll-padding here: the section anchors already carry a scroll-margin that clears the sticky header;
-   test-a11y-audit.js checks focus never lands under it.) */
-
-/* Sticky header: at .82 alpha the black stage sections show through enough that the muted "Unofficial parody"
-   pill drops to about 4.3:1 while scrolling past them. At .94 it stays above 5:1 over every section. */
-html .site-header{background:rgba(250,250,247,.94)}
-
-/* Small print never below 12px (it was 11px). On phones, no tracking and 6px sides keep the pill at 137px
-   (it was 138px at 11px), so brand, pill and Menu stay on one 56px row at 360-390px. */
-html header.site-header .nav-pill{font-size:12px}
-@media (max-width:400px){html header.site-header .nav-pill{letter-spacing:0;padding:6px 6px}}
-
-/* The family seat map's "NO" stamp sat right on the drawing's strokes (about 1.7:1 where they cross).
-   A card-colored backing keeps the stamp look and keeps the red at 3.4:1 (large bold text). */
-#family .art-labels li.stamp{background:var(--card)}
-
-@media (max-width:700px){
-  /* small print floor on phones: compare captions (11px), round stickers (10px) */
-  html .compare-table .compare-cap{font-size:12px}
-  html .art-labels li.sticker{--size:96px;font-size:12px;letter-spacing:.02em;padding:7px;line-height:1.1}
+/* ---------- UI lane, pass 2 ---------- */
+/* Long typed items (60 characters, no spaces) wrap instead of pushing the card wider. */
+.fit-item{overflow-wrap:anywhere}
+/* Copy while measuring or mid-cut: still visible and focusable, but inert until the result lands. */
+.fit-actions [aria-disabled="true"]{opacity:.5;cursor:progress}
+/* Phones: the field takes the full row so the whole placeholder (the in-laws punchline) shows; Check fit sits under it. */
+@media (max-width:480px){.fit .field-row{flex-direction:column}.fit .field-row .btn{width:100%}}
+/* Spoilers: a marker swipe the first time an unlocked line is on screen (motion only; app-ui.js adds .is-unlocked). */
+@media (prefers-reduced-motion:no-preference){
+  [data-spoiler].is-unlocked{background-image:linear-gradient(var(--spike-yellow),var(--spike-yellow));background-repeat:no-repeat;background-position:0 92%;-webkit-box-decoration-break:clone;box-decoration-break:clone;animation:fs-unlock 1.8s cubic-bezier(.3,.7,.3,1) both}
 }
-@media (max-width:369px){
-  /* favor lineup chips were 11px at 360px; 12px still fits three on a row with 1px less side padding */
-  html body #favor-protection .art-labels li:not(.plain){font-size:12px;padding:4px 5px}
-}
+@keyframes fs-unlock{0%{background-size:0 .3em}30%,75%{background-size:100% .3em}100%{background-size:100% 0}}
+/* Scroll-track truck: 2px clear of both ends of the track, so the page edge never cuts it; its outline may spill past the 12px box. */
+html.js .scroll-track .scroll-track__truck{left:2px;transform:translateX(calc(var(--p,0) * (var(--tw,100vw) - 16px)))}
+.scroll-track__truck svg{overflow:visible}
 
+/* Hero zoom: the caption pills stay off the spike-tape X. Wide screens: they flank the truck in the X's
+   side wedges on the crossing row (50% + 235px; the stage is 840px tall at 1:1, anchor y 655).
+   Narrow screens: they stack in the top wedge, above the X's upper arms and under the buttons. */
+@media (min-width:861px){
+  .hero.is-zoomed .hero-caption,.hero.is-zoomed .hero-under{top:calc(50% + 235px);bottom:auto;max-width:calc(50% - 252px);transform:translateY(-50%)}
+  .hero.is-zoomed .hero-caption{left:auto;right:calc(50% + 236px);text-align:right}
+  .hero.is-zoomed .hero-under{left:calc(50% + 236px);right:auto;text-align:left}
+}
+@media (max-width:860px){
+  .hero.is-zoomed .hero-caption{top:auto;bottom:calc(50% - 65px);transform:translateX(-50%)}
+  .hero.is-zoomed .hero-under{top:auto;bottom:calc(50% - 100px)}
+}/* Hero zoom on phones: the zoom buttons wrap to 2 rows at 1,600%, so the pill stack sits a little lower here.
+   The pills are narrower on phones, so the X's upper arms still clear the lower pill. */
+@media (max-width:420px){
+  .hero.is-zoomed .hero-caption,.hero.is-zoomed .hero-under{padding:4px 12px}
+  .hero.is-zoomed .hero-caption{bottom:calc(50% - 77px)}
+  .hero.is-zoomed .hero-under{bottom:calc(50% - 112px)}
+}
+@media (max-width:340px){
+  .hero.is-zoomed .hero-caption,.hero.is-zoomed .hero-under{font-size:12px;padding:3px 10px}
+  .hero.is-zoomed .hero-caption{bottom:calc(50% - 83px)}
+}/* Wide desktops: room for the 400% caption on one line beside the X. */
+@media (min-width:1200px){
+  .hero.is-zoomed .hero-caption,.hero.is-zoomed .hero-under{max-width:calc(50% - 240px)}
+  .hero.is-zoomed .hero-caption{right:calc(50% + 226px)}
+  .hero.is-zoomed .hero-under{left:calc(50% + 226px)}
+}
 /* copy lane: the parody notice above the sticky header.
    It sits in normal flow above .site-header, so it scrolls away and the header
    still sticks at top:0 (no shift). Fixed line-height keeps its height steady
@@ -634,6 +663,15 @@ html header.site-header .nav-pill{font-size:12px}
 #hero{min-height:max(calc(100svh - var(--nav-h) - var(--parody-h,30px)),720px)}
 /* balanced eyebrow: no lone "TRUCK" on its own line at phone width */
 #hero .eyebrow{text-wrap:balance}
+/* zoomed on 341-380px phones: the 1,600% buttons wrap to 2 rows, so the caption pill drops its tracking (and goes
+   to 12px under 360px) to stay on one line; its top then clears the buttons by about 25px instead of 7px
+   (340px and narrower keep style-ui's 12px rule) */
+@media (min-width:341px) and (max-width:380px){
+  #hero.is-zoomed .hero-caption{letter-spacing:0;padding:4px 8px}
+}
+@media (min-width:341px) and (max-width:359px){
+  #hero.is-zoomed .hero-caption{font-size:12px}
+}
 
 /* ---------- super cute ---------- */
 /* the drawing's top band already carries its labels, so the figure can sit closer to the copy */
@@ -641,9 +679,13 @@ html header.site-header .nav-pill{font-size:12px}
 /* room under the "p" descender of the giant title */
 #super-cute .h-big + .lede{margin-top:clamp(28px,2.8vw,40px)}
 
+/* ---------- centered slides ---------- */
+/* centered copy under the giant titles wraps to even lines, with no one- or two-word last line */
+#super-cute .lede,#super-cute .body-copy,#fence-mode .lede--wide,#fence-mode .body-copy,#seats-four .lede{text-wrap:balance}
+
 /* ---------- hobbitville ---------- */
-/* "fun-size" never splits at its hyphen across lines */
-#hobbitville .nowrap{white-space:nowrap}
+/* "fun-size" (and fence mode's chart label "three-point") never split at the hyphen across lines */
+#hobbitville .nowrap,#fence-mode .nowrap{white-space:nowrap}
 
 /* ---------- fence mode ---------- */
 /* the long quote keeps a readable centered measure (about 65 characters a line) */
@@ -682,13 +724,13 @@ html header.site-header .nav-pill{font-size:12px}
 
 /* ---------- family ---------- */
 @media (max-width:700px){
-  /* phone chip row: "see: Grandma" becomes a chip like the others; the math line becomes the caption under them */
+  /* phone chip row: the plain labels read as chips; "see: Grandma" stays on its sign (an inline style in art/family-seat-map.labels.html cancels the pill), and li.plain + li.plain turns "Seats: 2. Kids: 2. Math: hard." into the caption under the chips */
   #family .art-labels li.plain{background:var(--paper);border:2px solid var(--ink);border-radius:999px;padding:5px 11px}
   #family .art-labels li.plain + li.plain{flex-basis:100%;margin-top:2px;background:none;border:0;border-radius:0;padding:0}
 }
 
 /* ---------- airport ---------- */
-/* the lawn rect bleeds 20 units past the viewBox; clip it so the drawing lines up with the board above */
+/* nothing in arrivals-board bleeds past the viewBox now (art fix); the clip stays as a guard so a future bleed cannot widen the figure */
 #airport .fig--board .art > svg{overflow:hidden}
 
 /* ---------- will it fit ---------- */
@@ -721,6 +763,17 @@ html header.site-header .nav-pill{font-size:12px}
   #specs .blueprint-art .art-labels li.plain{border:2px solid var(--chalk);padding:5px 11px;background:var(--stage)}
 }
 
+/* ---------- final pass r2 ---------- */
+/* family: the fine-print title no longer leaves "one)" alone on its own phone line */
+#family .fine-print-title{text-wrap:balance}
+/* will it fit: the privacy note breaks into two even lines instead of ending a line on "It" */
+#will-it-fit .fit-note{text-wrap:balance}
+@media (max-width:480px){
+  /* meter: at 360px "Fits, eventually" ran into "Rent a truck" (it read "eventuallytruck"). The meter now uses part of the card side padding and each label centres on its own tick, so a long word overflows evenly instead of into its neighbour */
+  #will-it-fit .meter{margin-inline:-12px}
+  #will-it-fit .meter-stops li{padding:0;display:flex;flex-direction:column;align-items:center}
+}
+
 /* Layout lane r3: faq, thank-you, one-more-thing, no-room, final-cta, footnotes, footer.
    Layout polish only; animation CSS and the will-it-fit widget live elsewhere. */
 
@@ -733,9 +786,10 @@ html header.site-header .nav-pill{font-size:12px}
 @media (min-width:360px){#thank-you .lede .nowrap,#final-cta .lede .nowrap,#one-more-thing .body-copy .nowrap{white-space:nowrap}}
 
 /* ---------- One more thing ---------- */
-/* Desktop sticker: 72px was too small for "ENLARGED", so its last letter ran off the white disc. */
+/* Desktop sticker: 72px was too small for "ENLARGED", so its last letter ran off the white disc. 96px keeps the
+   12px small-print floor with the word inside the disc. */
 @media (min-width:701px){
-  #one-more-thing .art-labels li.sticker{width:90px;padding:10px;font-size:11px;line-height:1.15}
+  #one-more-thing .art-labels li.sticker{width:96px;padding:10px;font-size:12px;letter-spacing:.02em;line-height:1.15}
 }
 /* Phones: each chip row hugs its own frame instead of floating next to the frame below it. */
 @media (max-width:700px){
@@ -751,6 +805,15 @@ html header.site-header .nav-pill{font-size:12px}
 #final-cta .h-cta + .lede{margin-top:clamp(24px,2.6vw,36px)}
 #final-cta .fine{text-wrap:balance}
 #one-more-thing .fine{text-wrap:pretty}
+/* 701px and wider: the first lede breaks after "Say it at work." instead of leaving "Say" alone at a line end. */
+@media (min-width:701px){#final-cta .lede .keep-wide{white-space:nowrap}}
+/* Phones: the punchline gets its own balanced lines ("Say it to the guy / with the lifted diesel.")
+   instead of starting at the end of the "Say it at work." line and splitting after "the". */
+@media (max-width:700px){#final-cta .lede .keep-wide{display:block;text-wrap:balance}}
+
+/* One more thing: the inline "Hobbitville" link gets a 44px-tall tap area; the line and the focus ring stay as they are. */
+#one-more-thing .fine a{position:relative}
+#one-more-thing .fine a::after{content:"";position:absolute;left:-6px;right:-6px;top:50%;height:44px;transform:translateY(-50%)}
 
 /* ---------- Footnotes: an appendix, so tighter padding; numbers align with the heading ---------- */
 #footnotes{padding:clamp(56px,6.5vw,96px) 0 clamp(40px,4.5vw,64px)}
@@ -762,6 +825,40 @@ html header.site-header .nav-pill{font-size:12px}
 /* ---------- Footer: same column as the footnotes above it ---------- */
 .site-footer .wrap{--max:880px}
 .site-footer .shop .mono-small{white-space:nowrap}
+
+/* style-x-a11y.css: accessibility lane for "fun size." Contrast, text-size floors and visually hidden captions.
+   Fixes only: palette tokens from art/art.css, no animation rules. Checked by test-a11y-audit.js.
+   Other style-x-* files sort after this one, so overrides of their rules carry a leading "html" / "html body". */
+
+/* Visually hidden, still read by screen readers (the compare and spec table captions). */
+.a11y-sr{position:absolute!important;width:1px!important;height:1px!important;margin:-1px!important;padding:0!important;
+  border:0!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;clip-path:inset(50%)!important;white-space:nowrap!important}
+
+/* (No scroll-padding here: the section anchors already carry a scroll-margin that clears the sticky header;
+   test-a11y-audit.js checks focus never lands under it.) */
+
+/* Sticky header: at .82 alpha the black stage sections show through enough that the muted "Unofficial parody"
+   pill drops to about 4.3:1 while scrolling past them. At .94 it stays above 5:1 over every section. */
+html .site-header{background:rgba(250,250,247,.94)}
+
+/* Small print never below 12px (it was 11px). On phones, no tracking and 6px sides keep the pill at 137px
+   (it was 138px at 11px), so brand, pill and Menu stay on one 56px row at 360-390px. */
+html header.site-header .nav-pill{font-size:12px}
+@media (max-width:400px){html header.site-header .nav-pill{letter-spacing:0;padding:6px 6px}}
+
+/* The family seat map's "NO" stamp sat right on the drawing's strokes (about 1.7:1 where they cross).
+   A card-colored backing keeps the stamp look and keeps the red at 3.4:1 (large bold text). */
+#family .art-labels li.stamp{background:var(--card)}
+
+@media (max-width:700px){
+  /* small print floor on phones: compare captions (11px), round stickers (10px) */
+  html .compare-table .compare-cap{font-size:12px}
+  html .art-labels li.sticker{--size:96px;font-size:12px;letter-spacing:.02em;padding:7px;line-height:1.1}
+}
+@media (max-width:369px){
+  /* favor lineup chips were 11px at 360px; 12px still fits three on a row with 1px less side padding */
+  html body #favor-protection .art-labels li:not(.plain){font-size:12px;padding:4px 5px}
+}
 
 </style>
 <meta property="og:type" content="website">
@@ -1024,7 +1121,7 @@ html header.site-header .nav-pill{font-size:12px}
 <aside class="parody-line" aria-label="Parody notice"><p>Parody. Not affiliated with Slate Auto.</p></aside>
 <header class="site-header" id="top" data-nav>
   <div class="nav-bar">
-    <a class="brand" href="#top">fun size.<svg class="brand-glyph" viewBox="0 0 24 14" width="10" height="6" aria-hidden="true" focusable="false"><use href="#truck-glyph"/></svg></a>
+    <a class="brand" href="#">fun size.<svg class="brand-glyph" viewBox="0 0 24 14" width="10" height="6" aria-hidden="true" focusable="false"><use href="#truck-glyph"/></svg></a>
     <span class="nav-pill">Unofficial parody</span>
     <nav class="nav-links" id="site-nav" aria-label="Sections">
       <ul>
@@ -1084,7 +1181,7 @@ html header.site-header .nav-pill{font-size:12px}
     </div>
   </div>
   <p class="stage-caption hero-caption" data-anim="shown-actual-size" aria-live="polite">Shown actual size.</p>
-  <p class="hero-under">Can't see it? Neither could the front row.</p>
+  <p class="hero-under">Can’t see it? Neither could the front row.</p>
   <p class="cue hero-cue">[reverent silence]</p>
 </section>
 
@@ -1093,7 +1190,7 @@ html header.site-header .nav-pill{font-size:12px}
     <p class="eyebrow">Look at it.</p>
     <h2 id="super-cute-title" class="h-big">Super cute.</h2>
     <p class="lede">Like a Smart car with a truck bed that you can load other small things into.</p>
-    <p class="body-copy">A toaster. A houseplant. A shoebox. If it's small, it's welcome here, next to the other small thing.</p>
+    <p class="body-copy">A toaster. A houseplant. A shoebox. If it’s small, it’s welcome here, next to the other small thing.</p>
     <figure class="fig fig--wide">
       <figure class="art" data-art="small-things-bed"><svg xmlns="http://www.w3.org/2000/svg" viewBox="70 60 1080 720" role="img">
 <title>The little truck, enlarged to show texture, with its bed full of other small things: a toaster, a succulent on a shoebox and a smaller toy truck.</title>
@@ -1170,7 +1267,7 @@ html header.site-header .nav-pill{font-size:12px}
     <p class="eyebrow">Where it all started</p>
     <h2 id="hobbitville-title" class="h-mega h-mega--long">Hobbitville.</h2>
     <div class="anecdote">
-      <p class="serif">There used to be a place called Hobbitville by my house. (Garrett's been.) They had all of these creepy houses because they were all fun size. But this car* could have easily fit in their <span class="nowrap">fun-size</span> garage.</p>
+      <p class="serif">There used to be a place called Hobbitville by my house. (Garrett’s been.) They had all of these creepy houses because they were all fun size. But this car* could have easily fit in their <span class="nowrap">fun-size</span> garage.</p>
       <p class="footnote-inline">*Truck.</p>
     </div>
     <p class="body-copy">Most people saw creepy little houses. A few of us saw a parking spot.</p>
@@ -1253,7 +1350,7 @@ html header.site-header .nav-pill{font-size:12px}
   <div class="wrap center">
     <p class="eyebrow">Introducing Fence Mode</p>
     <h2 id="fence-mode-title" class="h-mega">Over.</h2>
-    <p class="lede lede--wide">It's like the perfect vehicle for moving dirt from one side of the yard to another, and then you don't need to worry about it getting around a fence, because you can just pick it up and put it on the other side.</p>
+    <p class="lede lede--wide">It’s like the perfect vehicle for moving dirt from one side of the yard to another, and then you don’t need to worry about it getting around a fence, because you can just pick it up and put it on the other side.</p>
     <p class="review-badge"><span class="stars" aria-hidden="true">★★★★★</span> <span>“HA HA”</span> <span class="review-who">(an early reviewer)</span></p>
     <figure class="fig fig--wide">
       <figure class="art" data-art="fence-lift"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" class="crop-4x3" preserveAspectRatio="xMidYMid slice">
@@ -1300,8 +1397,8 @@ html header.site-header .nav-pill{font-size:12px}
   <circle class="f-dirt-dark ol thin" cx="664" cy="321" r="4"/>
   <circle class="f-dirt ol thin" cx="509" cy="317" r="5.5"/>
   <!-- a little spills off the tailgate on the way up -->
-  <circle class="f-dirt ol thin" cx="497" cy="342" r="5.5"/>
-  <circle class="f-dirt-dark ol thin" cx="489" cy="366" r="4"/>
+  <circle class="f-dirt ol thin" cx="497" cy="342" r="5.5" data-anim="spill"/>
+  <circle class="f-dirt-dark ol thin" cx="489" cy="366" r="4" data-anim="spill"/>
 </g>
 
 <!-- near side: the dirt, with a shovel stuck in it (drawn over the truck so it parks behind the pile) -->
@@ -1338,11 +1435,11 @@ html header.site-header .nav-pill{font-size:12px}
       <p class="replay-caption" data-anim="replay-caption">Look at that form. Look at that dirt.</p>
     </div>
     <p class="body-copy">Other trucks go around. This one goes over. No app. No update. No subscription. Just you, the truck and excellent posture.</p>
-    <p class="body-copy">We think you're going to love it. We think you're going to be able to lift it.</p>
+    <p class="body-copy">We think you’re going to love it. We think you’re going to be able to lift it.</p>
     <figure class="chart panel chart--fence" data-anim="chart-fence">
       <figcaption class="chart-title">Getting dirt past a fence</figcaption>
       <ul class="bars">
-        <li><span class="bar-label">Around (open the gate, three-point turn, small talk with a neighbor)</span><span class="bar-value">14 min</span><span class="bar-track" aria-hidden="true"><span class="bar-fill" data-anim="bar" style="--v:1"></span></span></li>
+        <li><span class="bar-label">Around (open the gate, <span class="nowrap">three-point</span> turn, small talk with a neighbor)</span><span class="bar-value">14 min</span><span class="bar-track" aria-hidden="true"><span class="bar-fill" data-anim="bar" style="--v:1"></span></span></li>
         <li><span class="bar-label">Over (lift)</span><span class="bar-value">4 sec</span><span class="bar-track" aria-hidden="true"><span class="bar-fill" data-anim="bar" style="--v:.005"></span></span></li>
       </ul>
       <p class="chart-note">Your legs may vary.</p>
@@ -1360,9 +1457,9 @@ html header.site-header .nav-pill{font-size:12px}
     </div>
     <div class="split">
       <div class="split-a col-6">
-        <p class="lede">I think the biggest upside is you get to say “I drive a truck,” but never have to worry about anyone asking to use your truck to pick up something like a couch or a table, since they're both bigger than your truck.</p>
-        <p class="body-copy">Favor Protection is always on. There's no setting to find, because it's built into the dimensions.</p>
-        <p class="body-copy body-strong">That's not a limitation. That's a boundary.</p>
+        <p class="lede">I think the biggest upside is you get to say “I drive a truck,” but never have to worry about anyone asking to use your truck to pick up something like a couch or a table, since they’re both bigger than your truck.</p>
+        <p class="body-copy">Favor Protection is always on. There’s no setting to find, because it’s built into the dimensions.</p>
+        <p class="body-copy body-strong">That’s not a limitation. That’s a boundary.</p>
         <p class="status-chip"><span class="status-dot" aria-hidden="true"></span>Favor Protection: always on</p>
       </div>
       <div class="split-b col-6">
@@ -1442,7 +1539,7 @@ html header.site-header .nav-pill{font-size:12px}
     <p class="eyebrow">Capacity</p>
     <h2 id="seats-four-title" class="h-big">Seats four.*</h2>
     <p class="lede">You could easily fit 4 table chairs, then rent a truck to pick up the table.</p>
-    <p class="body-copy">It's not a shopping trip. It's a series.</p>
+    <p class="body-copy">It’s not a shopping trip. It’s a series.</p>
     <p class="body-copy">Dinner for four. Delivered in installments.</p>
     <p class="footnote-inline">*Table chairs. In the bed.</p>
     <figure class="fig fig--wide">
@@ -1450,7 +1547,7 @@ html header.site-header .nav-pill{font-size:12px}
 <div class="art-frames" style="--frames:2">
 <div class="art-frame">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="40 56 740 788" role="img">
-<title>Trip 1: four dining chairs, two upright and two upside down, stacked in the little truck's bed and towering over its cab.</title>
+<title>Trip 1: 4 dining chairs, 2 upright and 2 upside down, stacked in the little truck’s bed and towering over its cab.</title>
 <defs>
   <!-- chairs stand on the hidden bed floor; this hides everything below the near rail top (and above the panel) -->
   <clipPath id="two-truck-dining-bed"><rect x="40" y="56" width="740" height="478.3"/></clipPath>
@@ -1558,7 +1655,7 @@ html header.site-header .nav-pill{font-size:12px}
       <div class="split-b col-7">
         <figure class="fig fig--flush">
           <figure class="art" data-art="family-seat-map"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" role="img" style="overflow:hidden">
-  <title>An airline-style seat chart of the tiny truck seen from above: You and Kid #1 fill its only two seats, the bed is stamped NO and holds just a dirt mound and a chair, and Kid #2 waits on the curb with arms crossed next to a sign.</title>
+  <title>An airline-style seat chart of the tiny truck seen from above: You and Kid #1 fill its only 2 seats; the bed is stamped NO and holds just a dirt mound and a chair; Kid #2 waits on the curb with arms crossed next to a sign.</title>
 
   <!-- sidewalk and curb along the passenger side (top-down): concrete slabs out to the edge, so it reads as a
        sidewalk on paper and on card sections alike (a card-colored strip vanished into the card background) -->
@@ -1618,7 +1715,7 @@ html header.site-header .nav-pill{font-size:12px}
   <li style="--x:42.08%;--y:52.67%">Kid #2?</li>
   <li class="stamp" data-anim="stamp" style="--x:42.08%;--y:0%;--px:42.08%;--py:0%;margin-top:46%;font-size:clamp(22px,3vw,44px)">NO</li>
   <li style="--x:42.08%;--y:83.6%">Bed: cargo only.</li>
-  <li class="plain" style="--x:84.08%;--y:0%;margin-top:44.17%;position:absolute;transform:translate(-50%,-50%);width:min-content;white-space:normal;text-align:center;line-height:1.15;font-size:clamp(12px,1.25vw,18px)">see: Grandma</li>
+  <li class="plain" style="--x:84.08%;--y:0%;margin-top:44.17%;position:absolute;transform:translate(-50%,-50%);background:none;border:0;border-radius:0;padding:0;width:min-content;white-space:normal;text-align:center;line-height:1.15;font-size:clamp(12px,1.25vw,18px)">see: Grandma</li>
   <li class="plain" style="--x:3%;--y:95%;--tx:0%">Seats: 2. Kids: 2. Math: hard.</li>
   <li class="sticker" style="--x:14%;--y:0%;--px:13%;--py:0%;margin-top:12.75%">Enlarged to show seating.</li>
 </ol></figure>
@@ -1635,9 +1732,9 @@ html header.site-header .nav-pill{font-size:12px}
       <div class="split-a col-5">
         <p class="eyebrow">Travel</p>
         <h2 id="airport-title" class="h-xl">The airport run. Retired.</h2>
-        <p class="lede">If you have family come into town and there's more than one, they'll know they need to get an Uber. So no more of those annoying trips to the airport.</p>
-        <p class="body-copy">No circling arrivals. No “we're at door 6.” No “the other door 6.” The truck says no, so you never have to.</p>
-        <p class="body-copy">Party of one? Technically, they'd fit. We'd keep that quiet.</p>
+        <p class="lede">If you have family come into town and there’s more than one, they’ll know they need to get an Uber. So no more of those annoying trips to the airport.</p>
+        <p class="body-copy">No circling arrivals. No “we’re at door 6.” No “the other door 6.” The truck says no, so you never have to.</p>
+        <p class="body-copy">Party of one? Technically, they’d fit. We’d keep that quiet.</p>
       </div>
       <div class="split-b col-7">
         <div class="board" data-anim="arrivals">
@@ -1656,23 +1753,24 @@ html header.site-header .nav-pill{font-size:12px}
         </div>
         <figure class="fig fig--flush fig--board">
           <figure class="art" data-art="arrivals-board"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 520" class="crop-4x3" preserveAspectRatio="xMidYMid slice" role="img" style="overflow:hidden">
-  <title>While the family's flights land, the little two-seat truck naps in the driveway with z's drifting up over its cab, because airport runs are retired.</title>
+  <title>While the family’s flights land, the little 2-seat truck naps in the driveway with z’s drifting up over its cab, because airport runs are retired.</title>
 
-  <!-- lawn, driveway, sidewalk -->
-  <rect class="f-grass" x="-20" y="400" width="1240" height="88"/>
-  <path class="ln" d="M-20 400H1220"/>
+  <!-- lawn, driveway, sidewalk: they run to the frame's edges and stop there (nothing bleeds past the viewBox) -->
+  <rect class="f-grass" x="0" y="400" width="1200" height="88"/>
+  <path class="ln" d="M0 400H1200"/>
   <path class="f-asphalt ol" d="M300 400H576L880 488H250Z"/>
-  <rect class="f-card ol" x="-20" y="486" width="1240" height="18"/>
+  <rect class="f-card" x="0" y="486" width="1200" height="18"/>
+  <path class="ln" d="M0 486H1200M0 504H1200"/>
 
-  <!-- the corner of the house -->
-  <rect class="f-card ol" x="-20" y="208" width="632" height="192"/>
-  <path class="f-terracotta ol" d="M-20 104H520L644 204H-20Z"/>
-  <path class="ln thin" d="M-20 138H562M-20 171H603"/>
-  <rect class="f-white ol" x="-20" y="198" width="674" height="14" rx="4"/>
+  <!-- the whole house, set in from the left edge so its end wall and hipped roof show -->
+  <rect class="f-card ol" x="50" y="208" width="562" height="192"/>
+  <path class="f-terracotta ol" d="M146 104H520L644 204H22Z"/>
+  <path class="ln thin" d="M104 138H562M63 171H603"/>
+  <rect class="f-white ol" x="12" y="198" width="642" height="14" rx="4"/>
   <!-- window -->
-  <rect class="f-sky ol" x="26" y="250" width="92" height="80" rx="6"/>
-  <path class="ln thin" d="M72 250V330M26 290H118"/>
-  <rect class="f-white ol" x="18" y="328" width="108" height="10" rx="3"/>
+  <rect class="f-sky ol" x="66" y="250" width="68" height="80" rx="6"/>
+  <path class="ln thin" d="M100 250V330M66 290H134"/>
+  <rect class="f-white ol" x="60" y="328" width="80" height="10" rx="3"/>
   <!-- front door and step -->
   <rect class="f-door ol" x="150" y="262" width="76" height="138" rx="6"/>
   <rect class="f-sky ol thin" x="168" y="280" width="40" height="30" rx="4"/>
@@ -1714,7 +1812,7 @@ html header.site-header .nav-pill{font-size:12px}
 </svg><ol class="art-labels">
   <li class="sticker" style="--x:92%;--y:0%;--px:15%;--py:0%;margin-top:13%">Airport runs: 0</li>
 </ol></figure>
-          <figcaption class="fig-caption">The truck, during your family's arrival.</figcaption>
+          <figcaption class="fig-caption">The truck, during your family’s arrival.</figcaption>
         </figure>
       </div>
     </div>
@@ -1732,7 +1830,7 @@ html header.site-header .nav-pill{font-size:12px}
     <div class="fit" data-widget="root">
       <div class="fit-stage on-stage" data-widget="stage">
         <svg class="mini-stage" viewBox="0 0 1200 400" preserveAspectRatio="xMidYMid slice" role="img" focusable="false" data-widget="stage-svg">
-          <title>A mini stage: the X, the truck and the item's silhouette.</title>
+          <title>A mini stage: the X, the truck and the item’s silhouette.</title>
           <rect class="f-stage" width="1200" height="400"/>
           <rect class="f-stage2" y="300" width="1200" height="100"/>
           <line class="ln s-muted thin" x1="0" y1="300" x2="1200" y2="300"/>
@@ -1794,7 +1892,7 @@ html header.site-header .nav-pill{font-size:12px}
             <button type="button" class="btn btn--ghost" data-widget="reset">Check something else</button>
           </div>
         </div>
-        <p class="fine fit-note">The Fit Engine runs in your browser. It doesn't save what you type. It just judges it.</p>
+        <p class="fine fit-note">The Fit Engine runs in your browser. It doesn’t save what you type. It just judges it.</p>
       </div>
     </div>
   </div>
@@ -1815,7 +1913,7 @@ html header.site-header .nav-pill{font-size:12px}
 <tr role="row"><th scope="row" role="rowheader">Friends ask to borrow it for their couch</th><td role="cell" data-label="A big truck">Every other weekend</td><td role="cell" class="is-us" data-label="This truck"><span class="cell-us"><svg class="check" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path class="ln s-green" d="M4 10.5l4 4L16 6"/></svg><span>Never. The couch is bigger than your truck.</span></span></td><td role="cell" data-label="A wheelbarrow">Once, as a joke</td></tr>
 <tr role="row"><th scope="row" role="rowheader">Tables</th><td role="cell" data-label="A big truck">Hauls them</td><td role="cell" class="is-us" data-label="This truck"><span class="cell-us"><svg class="check" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path class="ln s-green" d="M4 10.5l4 4L16 6"/></svg><span>Rent a truck</span></span></td><td role="cell" data-label="A wheelbarrow">It tried</td></tr>
 <tr role="row"><th scope="row" role="rowheader">Dining chairs</th><td role="cell" data-label="A big truck">Sure</td><td role="cell" class="is-us" data-label="This truck"><span class="cell-us"><svg class="check" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path class="ln s-green" d="M4 10.5l4 4L16 6"/></svg><span>4, easily</span></span></td><td role="cell" data-label="A wheelbarrow">One chair, briefly</td></tr>
-<tr role="row"><th scope="row" role="rowheader">2x4s</th><td role="cell" data-label="A big truck">Whole</td><td role="cell" class="is-us" data-label="This truck"><span class="cell-us"><svg class="check" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path class="ln s-green" d="M4 10.5l4 4L16 6"/></svg><span data-spoiler="compare-2x4">We'll get to that.</span></span></td><td role="cell" data-label="A wheelbarrow">One, wobbling</td></tr>
+<tr role="row"><th scope="row" role="rowheader">2x4s</th><td role="cell" data-label="A big truck">Whole</td><td role="cell" class="is-us" data-label="This truck"><span class="cell-us"><svg class="check" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path class="ln s-green" d="M4 10.5l4 4L16 6"/></svg><span data-spoiler="compare-2x4">We’ll get to that.</span></span></td><td role="cell" data-label="A wheelbarrow">One, wobbling</td></tr>
 <tr role="row"><th scope="row" role="rowheader">Fences</th><td role="cell" data-label="A big truck">Drives around</td><td role="cell" class="is-us" data-label="This truck"><span class="cell-us"><svg class="check" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path class="ln s-green" d="M4 10.5l4 4L16 6"/></svg><span>Goes over (you lift)</span></span></td><td role="cell" data-label="A wheelbarrow">Also pick it up</td></tr>
 <tr role="row"><th scope="row" role="rowheader">Fits in a fun-size garage</th><td role="cell" data-label="A big truck">No</td><td role="cell" class="is-us" data-label="This truck"><span class="cell-us"><svg class="check" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path class="ln s-green" d="M4 10.5l4 4L16 6"/></svg><span>Easily</span></span></td><td role="cell" data-label="A wheelbarrow">Yes, next to the truck</td></tr>
 <tr role="row"><th scope="row" role="rowheader">The second kid rides</th><td role="cell" data-label="A big truck">In the back seat</td><td role="cell" class="is-us" data-label="This truck"><span class="cell-us"><svg class="check" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path class="ln s-green" d="M4 10.5l4 4L16 6"/></svg><span>Not in the bed. See fine print.</span></span></td><td role="cell" data-label="A wheelbarrow">Also not a seat.</td></tr>
@@ -1863,7 +1961,7 @@ html header.site-header .nav-pill{font-size:12px}
         </svg>
         <ol class="art-labels">
           <li class="on-stage" style="--x:34.5%;--y:95.5%">OVERALL LENGTH: 1 Smart car + 1 bed</li>
-          <li class="on-stage bp-height" style="--x:65%;--y:50%;--tx:0%">HEIGHT: shorter than you'd hope</li>
+          <li class="on-stage bp-height" style="--x:65%;--y:50%;--tx:0%">HEIGHT: shorter than you’d hope</li>
           <li class="on-stage" style="--x:21.4%;--y:35%">smaller</li>
           <li class="on-stage plain bp-inside" style="--x:21.4%;--y:48%">other small things</li>
           <li class="on-stage bp-callout" style="--x:77%;--y:16%">Wheels (4). Same as a big truck. This is where the similarities end.</li>
@@ -1883,14 +1981,14 @@ html header.site-header .nav-pill{font-size:12px}
 <tr><th scope="row">Fence clearance</th><td>As high as you can lift it.</td></tr>
 <tr><th scope="row">Curb weight</th><td>Intentionally omitted for morale reasons.</td></tr>
 <tr><th scope="row">Turning radius</th><td>Irrelevant. Pick it up and face it the other way.</td></tr>
-<tr><th scope="row">Garage compatibility</th><td>Fun size and up. Hobbitville-rated. (Garrett's been.)</td></tr>
+<tr><th scope="row">Garage compatibility</th><td>Fun size and up. Hobbitville-rated. (Garrett’s been.)</td></tr>
 <tr><th scope="row">Kids</th><td>1, in the seat next to you (car-seat rules apply). Bed:&nbsp;0. Always&nbsp;0. <a class="spec-note" href="#family-fine-print">See the family fine print.</a></td></tr>
 <tr><th scope="row">Airport runs per year</th><td>0 (party of 2+).</td></tr>
 <tr><th scope="row">Favors per year</th><td>0.</td></tr>
-<tr><th scope="row">Range</th><td>About 205 miles, claimed. None of them to the airport. <span class="spec-note">Manufacturer's estimate.</span></td></tr>
+<tr><th scope="row">Range</th><td>About 205 miles, claimed. None of them to the airport. <span class="spec-note">Manufacturer’s estimate.</span></td></tr>
 <tr><th scope="row">Charging</th><td>Plugs into a regular wall outlet, like the other small things.</td></tr>
 <tr><th scope="row">Windows</th><td>Hand-crank, as announced at the 2025 reveal. Doubles as Fence Mode training.</td></tr>
-<tr><th scope="row">Screen</th><td>None. Bring your phone. It'll feel huge in here.</td></tr>
+<tr><th scope="row">Screen</th><td>None. Bring your phone. It’ll feel huge in here.</td></tr>
 <tr><th scope="row">Color</th><td>Gray. Wraps come in every color except bigger.</td></tr>
 <tr><th scope="row">Cuteness</th><td>Super.</td></tr>
 <tr><th scope="row">Unveiled</th><td>April 2025. Shown actual size ever since.</td></tr>
@@ -1910,7 +2008,7 @@ html header.site-header .nav-pill{font-size:12px}
     <ul class="quotes">
 <li class="quote-card"><figure><svg class="avatar" viewBox="0 0 64 64" width="56" height="56" aria-hidden="true" focusable="false" style="--line-w:2px"><circle class="f-cloth1" cx="32" cy="32" r="32" opacity=".3"/><path class="f-cloth1 ol" d="M9.6 52C12 42 21 39 32 39s20 3 22.4 13A30 30 0 0 1 9.6 52z"/><circle class="f-head ol" cx="32" cy="25" r="10"/></svg><blockquote class="quote"><p>My buddy texted, “Can I borrow your truck to grab a couch?” I sent him a picture of the truck. He sent back “oh.” That was in March.</p></blockquote><figcaption class="persona">Former designated mover, now retired</figcaption></figure></li>
 <li class="quote-card"><figure><svg class="avatar" viewBox="0 0 64 64" width="56" height="56" aria-hidden="true" focusable="false" style="--line-w:2px"><circle class="f-cloth2" cx="32" cy="32" r="32" opacity=".3"/><path class="f-cloth2 ol" d="M9.6 52C12 42 21 39 32 39s20 3 22.4 13A30 30 0 0 1 9.6 52z"/><circle class="f-head ol" cx="32" cy="25" r="10"/></svg><blockquote class="quote"><p>Moved the whole dirt pile to the other side of the yard. Got to the fence, picked the truck up, set it down, kept going. The fence never stood a chance.</p></blockquote><figcaption class="persona">Homeowner, fence-adjacent</figcaption></figure></li>
-<li class="quote-card"><figure><svg class="avatar" viewBox="0 0 64 64" width="56" height="56" aria-hidden="true" focusable="false" style="--line-w:2px"><circle class="f-cloth3" cx="32" cy="32" r="32" opacity=".3"/><path class="f-cloth3 ol" d="M9.6 52C12 42 21 39 32 39s20 3 22.4 13A30 30 0 0 1 9.6 52z"/><circle class="f-head ol" cx="32" cy="25" r="10"/></svg><blockquote class="quote"><p>My in-laws landed at 11:40 p.m. There were two of them. They knew. I was asleep.</p></blockquote><figcaption class="persona">Formerly the family airport shuttle</figcaption></figure></li>
+<li class="quote-card"><figure><svg class="avatar" viewBox="0 0 64 64" width="56" height="56" aria-hidden="true" focusable="false" style="--line-w:2px"><circle class="f-cloth3" cx="32" cy="32" r="32" opacity=".3"/><path class="f-cloth3 ol" d="M9.6 52C12 42 21 39 32 39s20 3 22.4 13A30 30 0 0 1 9.6 52z"/><circle class="f-head ol" cx="32" cy="25" r="10"/></svg><blockquote class="quote"><p>My in-laws landed at 11:40&nbsp;p.m. There were two of them. They knew. I was asleep.</p></blockquote><figcaption class="persona">Formerly the family airport shuttle</figcaption></figure></li>
 <li class="quote-card"><figure><svg class="avatar" viewBox="0 0 64 64" width="56" height="56" aria-hidden="true" focusable="false" style="--line-w:2px"><circle class="f-cloth4" cx="32" cy="32" r="32" opacity=".3"/><path class="f-cloth4 ol" d="M9.6 52C12 42 21 39 32 39s20 3 22.4 13A30 30 0 0 1 9.6 52z"/><circle class="f-head ol" cx="32" cy="25" r="10"/></svg><blockquote class="quote"><p>I read the fine print. I ride with Grandma now.</p></blockquote><figcaption class="persona">Kid #2 · real seat, real seatbelt</figcaption></figure></li>
     </ul>
     <p class="fine">Owners are fictional. The relief is real.</p>
@@ -1924,13 +2022,13 @@ html header.site-header .nav-pill{font-size:12px}
       <h2 id="faq-title" class="h-xl">Questions. Small ones.</h2>
     </div>
     <div class="faq-list" data-faq>
-<details class="faq-item"><summary><span class="faq-q">Is it really a truck?</span><span class="faq-toggle" aria-hidden="true"><span class="when-closed">Show answer</span><span class="when-open">Hide answer</span></span></summary><div class="faq-a"><p>It has a bed, so yes. You may say “I drive a truck” at parties, reunions and job interviews. If anyone follows up, “It's a small one” ends the conversation.</p></div></details>
-<details class="faq-item"><summary><span class="faq-q">Does it come in a bigger size?</span><span class="faq-toggle" aria-hidden="true"><span class="when-closed">Show answer</span><span class="when-open">Hide answer</span></span></summary><div class="faq-a"><p>It comes in actual size. Bigger than that? Yes. It's called a truck.</p></div></details>
+<details class="faq-item"><summary><span class="faq-q">Is it really a truck?</span><span class="faq-toggle" aria-hidden="true"><span class="when-closed">Show answer</span><span class="when-open">Hide answer</span></span></summary><div class="faq-a"><p>It has a bed, so yes. You may say “I drive a truck” at parties, reunions and job interviews. If anyone follows up, “It’s a small one” ends the conversation.</p></div></details>
+<details class="faq-item"><summary><span class="faq-q">Does it come in a bigger size?</span><span class="faq-toggle" aria-hidden="true"><span class="when-closed">Show answer</span><span class="when-open">Hide answer</span></span></summary><div class="faq-a"><p>It comes in actual size. Bigger than that? Yes. It’s called a truck.</p></div></details>
 <details class="faq-item"><summary><span class="faq-q">Can I use it to help a friend move?</span><span class="faq-toggle" aria-hidden="true"><span class="when-closed">Show answer</span><span class="when-open">Hide answer</span></span></summary><div class="faq-a"><p>Only if your friend owns 4 chairs and nothing else.</p></div></details>
-<details class="faq-item"><summary><span class="faq-q">What if there's a fence in the way?</span><span class="faq-toggle" aria-hidden="true"><span class="when-closed">Show answer</span><span class="when-open">Hide answer</span></span></summary><div class="faq-a"><p>Pick it up and put it on the other side. Lift with your legs. For taller fences, ask a friend to help. Ask nicely. You've never had to help them move.</p></div></details>
+<details class="faq-item"><summary><span class="faq-q">What if there’s a fence in the way?</span><span class="faq-toggle" aria-hidden="true"><span class="when-closed">Show answer</span><span class="when-open">Hide answer</span></span></summary><div class="faq-a"><p>Pick it up and put it on the other side. Lift with your legs. For taller fences, ask a friend to help. Ask nicely. You’ve never had to help them move.</p></div></details>
 <details class="faq-item"><summary><span class="faq-q">Can my second kid ride in the bed?</span><span class="faq-toggle" aria-hidden="true"><span class="when-closed">Show answer</span><span class="when-open">Hide answer</span></span></summary><div class="faq-a"><p>No. Not for a short trip, not at walking speed, not in the driveway. Every kid rides buckled into a real seat, every trip, in this truck or another one. The bed is for dirt and chairs.</p></div></details>
-<details class="faq-item"><summary><span class="faq-q">My family is flying in. Do I have to pick them up?</span><span class="faq-toggle" aria-hidden="true"><span class="when-closed">Show answer</span><span class="when-open">Hide answer</span></span></summary><div class="faq-a"><p>If there's more than one, they'll know they need to get an Uber. No more of those annoying trips to the airport. If it's just one, technically they'd fit. We'd keep that quiet.</p></div></details>
-<details class="faq-item"><summary><span class="faq-q">Is this an official Slate Auto page?</span><span class="faq-toggle" aria-hidden="true"><span class="when-closed">Show answer</span><span class="when-open">Hide answer</span></span></summary><div class="faq-a"><p>No. It's a parody made by friends in a group chat. Not affiliated with or endorsed by Slate Auto. The truck seems lovely. We just can't stop measuring it.</p></div></details>
+<details class="faq-item"><summary><span class="faq-q">My family is flying in. Do I have to pick them up?</span><span class="faq-toggle" aria-hidden="true"><span class="when-closed">Show answer</span><span class="when-open">Hide answer</span></span></summary><div class="faq-a"><p>If there’s more than one, they’ll know they need to get an Uber. No more of those annoying trips to the airport. If it’s just one, technically they’d fit. We’d keep that quiet.</p></div></details>
+<details class="faq-item"><summary><span class="faq-q">Is this an official Slate Auto page?</span><span class="faq-toggle" aria-hidden="true"><span class="when-closed">Show answer</span><span class="when-open">Hide answer</span></span></summary><div class="faq-a"><p>No. It’s a parody made by friends in a group chat. Not affiliated with or endorsed by Slate Auto. The truck seems lovely. We just can’t stop measuring it.</p></div></details>
 <details class="faq-item"><summary><span class="faq-q">Can it haul lumber?</span><span class="faq-toggle" aria-hidden="true"><span class="when-closed">Show answer</span><span class="when-open">Hide answer</span></span></summary><div class="faq-a"><p data-spoiler="faq-lumber">Stay until the end.</p></div></details>
     </div>
   </div>
@@ -1965,12 +2063,12 @@ html header.site-header .nav-pill{font-size:12px}
     <h2 id="one-more-thing-title" class="h-big h-gradient">It hauls 2x4s.*</h2>
     <p class="lede">*If you cut 2x4s in half, you could easily fit them in the truck.</p>
     <p class="body-copy"><span class="nowrap">Same lumber.</span> <span class="nowrap">Half the length.</span> <span class="nowrap">All of the confidence.</span></p>
-    <p class="body-copy"><span class="nowrap">One 2x4, cut in half, is two 2x4s.</span> <span class="nowrap">You didn't lose length.</span> <span class="nowrap">You gained lumber.</span></p>
+    <p class="body-copy"><span class="nowrap">One 2x4, cut in half, is two 2x4s.</span> <span class="nowrap">You didn’t lose length.</span> <span class="nowrap">You gained lumber.</span></p>
     <figure class="fig fig--wide">
       <figure class="art" data-art="lumber-cut"><div class="art-frames">
 <div class="art-frame">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" class="crop-4x3" preserveAspectRatio="xMidYMid slice" role="img" style="--line:var(--chalk)">
-<title>Frame 1: an 8-foot 2x4 rests on the little truck's bed and hangs far off the back, marked with a red x.</title>
+<title>Frame 1: an 8-foot 2x4 rests on the little truck’s bed and hangs far off the back, marked with a red x.</title>
 <!-- lit backdrop card; the stage floor below y = 900 is the section's own black -->
 <path class="f-stage2" d="M0,48 A48,48 0 0 1 48,0 H1152 A48,48 0 0 1 1200,48 V900 H0 Z"/>
 <!-- truck enlarged (k = 3), ground y = 900; the full 8 ft board starts at the cab and overhangs past the tailgate -->
@@ -1985,7 +2083,7 @@ html header.site-header .nav-pill{font-size:12px}
 </svg>
 <ol class="art-labels">
   <li class="on-stage" style="--x:34%;--y:27.5%">A 2x4: 8 ft</li>
-  <li class="sticker" style="--x:80.5%;--y:19.5%;--size:clamp(84px,7vw,100px);--px:84.2%;--py:15.3%">Enlarged to show lumber.</li>
+  <li class="sticker" style="--x:80.5%;--y:19.5%;--size:clamp(84px,14vw - 8px,100px);--px:84.2%;--py:15.3%">Enlarged to show lumber.</li>
 </ol>
 </div>
 <div class="art-frame">
@@ -2012,7 +2110,7 @@ html header.site-header .nav-pill{font-size:12px}
 </div>
 <div class="art-frame">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" class="crop-4x3" preserveAspectRatio="xMidYMid slice" role="img" style="--line:var(--chalk)">
-<title>Frame 3: one 4-foot half of the 2x4 fits inside the truck's bed with a green check, the other half waits on the floor, and sawdust falls like confetti.</title>
+<title>Frame 3: one 4-foot half of the 2x4 fits inside the truck’s bed with a green check; the other half waits on the floor and sawdust falls like confetti.</title>
 <path class="f-stage2" d="M0,48 A48,48 0 0 1 48,0 H1152 A48,48 0 0 1 1200,48 V900 H0 Z"/>
 <g transform="translate(312 450) scale(3)" style="--line-w:2px">
   <use href="#truck" width="240" height="150"/>
@@ -2075,7 +2173,7 @@ html header.site-header .nav-pill{font-size:12px}
   <div class="wrap center">
     <p class="cue cue--lead" data-anim="no-room-cue">[someone shouts “one more thing!”]</p>
     <p class="eyebrow" data-anim="no-room-eyebrow">Oh. And one more thing.</p>
-    <h2 id="no-room-title" class="h-xl" data-anim="no-room-headline">(There isn't. There's no room.)</h2>
+    <h2 id="no-room-title" class="h-xl" data-anim="no-room-headline">(There isn’t. There’s no room.)</h2>
   </div>
   <svg class="stage-strip" viewBox="0 0 2400 180" preserveAspectRatio="xMidYMid slice" role="img" focusable="false">
     <title>The truck on its X, with a tan sliver of half a 2x4 in the bed.</title>
@@ -2097,14 +2195,14 @@ html header.site-header .nav-pill{font-size:12px}
 <section id="final-cta" class="slide on-stage final-cta" aria-labelledby="final-cta-title">
   <div class="wrap center">
     <h2 id="final-cta-title" class="h-xl h-cta">Say “I drive a truck.”</h2>
-    <p class="lede"><span class="nowrap">Say it at barbecues.</span> <span class="nowrap">Say it at work.</span> Say it to the guy with the lifted diesel.</p>
+    <p class="lede"><span class="nowrap">Say it at barbecues.</span> <span class="nowrap">Say it at work.</span> <span class="keep-wide">Say it to the guy with the lifted diesel.</span></p>
     <p class="lede"><span class="nowrap">Starting today.</span> <span class="nowrap">Never help anyone move again.</span></p>
     <div class="btn-row">
       <button type="button" class="btn btn--blue" data-toast="Nothing was reserved. This is a parody page. But the instinct is beautiful.">Reserve one</button>
       <a class="btn btn--ghost" href="#will-it-fit">Will it fit? ›</a>
     </div>
     <p class="body-copy cta-size">Available in one size: actual.</p>
-    <p class="body-copy">Reservation specialists are standing by. Both of them. It's a two-seater.</p>
+    <p class="body-copy">Reservation specialists are standing by. Both of them. It’s a two-seater.</p>
   </div>
   <svg class="stage-strip" viewBox="0 0 2400 180" preserveAspectRatio="xMidYMid slice" role="img" focusable="false">
     <title>The truck drives off stage right carrying half a 2x4. Two tiny tire marks stay on the X.</title>
@@ -2150,10 +2248,10 @@ html header.site-header .nav-pill{font-size:12px}
         <li><a href="#footnotes">Fine print</a></li>
         <li><a href="#favor-protection">Favor Protection</a></li>
         <li><a href="#hero">Shown actual size</a></li>
-        <li><a href="#top">Back to top (it's not far)</a></li>
+        <li><a href="#">Back to top (it’s not far)</a></li>
       </ul>
     </nav>
-    <p class="shop">More ways to shop: call <span class="clipped-number">1-800-ITS-A-TR…</span> <small class="mono-small">(the number didn't fit)</small>.</p>
+    <p class="shop">More ways to shop: call <span class="clipped-number">1-800-ITS-A-TR…</span> <small class="mono-small">(the number didn’t fit)</small>.</p>
     <p class="fine">Made in a group chat. © 2026 fun size. All small rights reserved.</p>
   </div>
 </footer>
@@ -2162,9 +2260,10 @@ html header.site-header .nav-pill{font-size:12px}
 <script>
 /* fun size. scenes: every scene animation from deck.json art_direction.motion.
    Plain JS, no libraries. Rules this file keeps:
-   - The markup already shows every final state. A scene sets its "before" state only at the moment it
-     starts (Web Animations with fill:backwards, so a cancelled or failed animation falls back to the
-     static, final state). Nothing is left hidden.
+   - The markup already shows every final state. A scene parks its "before" state about 300px before it
+     scrolls into view (its Web Animations are created paused on their first frame) and plays once it is
+     seen. fill:backwards means a cancelled or failed animation falls back to the static, final state.
+     Nothing is left hidden.
    - prefers-reduced-motion: reduce -> no tweens, flips, roll-ins or confetti; controls jump to their end
      states, and fs:one-more-thing still fires when #one-more-thing is seen.
    - Scenes start when they scroll into view and play once per page view (the replay control replays).
@@ -2198,6 +2297,7 @@ html header.site-header .nav-pill{font-size:12px}
     try { a = el.animate(frames, assign({ duration: 600, easing: 'cubic-bezier(.2,.7,.2,1)', fill: 'backwards' }, opts)); }
     catch (e) { return null; }
     live.push(a);
+    if (parking) { try { a.pause(); } catch (e) { /* plays at once */ } parking.push(a); }
     var drop = function () { var i = live.indexOf(a); if (i > -1) live.splice(i, 1); };
     a.finished.then(drop, drop);
     return a;
@@ -2231,6 +2331,50 @@ html header.site-header .nav-pill{font-size:12px}
       });
     }, { threshold: steps20, rootMargin: margin || '0px' });
     io.observe(el);
+  }
+
+  /* Park, then play. A scene's Web Animations are made while its figure is still about 300px off screen and
+     paused on their first frame, so the visitor never sees an end state vanish when a scene starts; they play
+     once the figure is seen. A parked scene is never left hidden in view: it plays when seen, and it finishes
+     at once if the visitor turns on reduced motion or prints. */
+  var parking = null; // while a part is being parked, play() pauses and collects its animations here
+  function watch(el, park, start, ratio) {
+    if (!hasIO) { park(); start(); return; }
+    var near = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) { near.disconnect(); park(); } });
+    }, { rootMargin: '300px 0px 300px 0px' });
+    near.observe(el);
+    whenSeen(el, start, ratio);
+  }
+  /* One part of a scene. opts: ratio (how much of el must be seen); prev and gap (start no sooner than gap ms
+     after the part before it starts, so frames that stack on phones still play in order, each in view);
+     onStart (called as the part starts). */
+  function part(el, build, opts) {
+    if (!el || !motion()) return null;
+    opts = opts || {};
+    var p = { at: -1, parked: null };
+    var park = function () {
+      if (p.parked) return;
+      parking = [];
+      try { build(); } catch (e) { /* the part keeps its static, final state */ }
+      p.parked = parking;
+      parking = null;
+    };
+    p.start = function () {
+      if (p.at > -1) return;
+      park();
+      var now = win.performance.now(), wait = 0;
+      if (opts.prev) { opts.prev.start(); wait = Math.max(0, opts.prev.at + (opts.gap || 0) - now); }
+      p.at = now + wait;
+      p.parked.forEach(function (a) {
+        if (a.playState !== 'paused') return; // replayed, or finished for reduced motion, meanwhile
+        if (wait) { try { a.effect.updateTiming({ delay: (a.effect.getTiming().delay || 0) + wait }); } catch (e) { /* plays without the wait */ } }
+        a.play();
+      });
+      if (opts.onStart) win.setTimeout(opts.onStart, wait);
+    };
+    watch(el, park, p.start, opts.ratio || 0.4);
+    return p;
   }
 
   /* ---------- scroll track: --p (0..1) and --tw (track width) on .scroll-track ---------- */
@@ -2305,7 +2449,7 @@ html header.site-header .nav-pill{font-size:12px}
 
     if (!btn || !truck) return;
     var steps = [
-      { z: 4, cap: 'Zoomed in 400%. Still actual size. That\'s consistency.', label: 'Zoom in more ›' },
+      { z: 4, cap: 'Zoomed in 400%. Still actual size. That’s consistency.', label: 'Zoom in more ›' },
       { z: 16, cap: 'Zoomed in 1,600%. Truck holding steady.', label: 'Back to the whole stage ›' },
       { z: 1, cap: 'Back to actual size. It never left.', label: 'Find it on stage ›' }
     ];
@@ -2331,10 +2475,11 @@ html header.site-header .nav-pill{font-size:12px}
       var s = steps[step], from = zoom;
       zoom = s.z;
       btn.textContent = s.label;
-      // while the X balloons under them, the caption lines sit on a stage-black pill so they stay readable
+      // while the X balloons under them, the caption lines sit on a stage-black pill so they stay readable;
+      // the caption names the new zoom as the tween starts, so the pill changes size once, on the click
       if (zoom > 1) sec.classList.add('is-zoomed');
+      if (cap) cap.textContent = s.cap;
       var done = function () {
-        if (cap) cap.textContent = s.cap;
         if (s.z === 1) sec.classList.remove('is-zoomed');
       };
       if (!motion()) { apply(zoom); done(); return; }
@@ -2355,8 +2500,7 @@ html header.site-header .nav-pill{font-size:12px}
   /* ---------- super-cute: the small things drop into the bed with a soft bounce ---------- */
   function superCute() {
     var fig = qs('#super-cute [data-art="small-things-bed"]');
-    if (!fig || !motion()) return;
-    whenSeen(fig, function () {
+    part(fig, function () {
       var start = [0, 260, 760, 1020]; // item-3 (the plant) waits until item-2 (its shoebox) has landed
       [1, 2, 3, 4].forEach(function (n, i) {
         play(qs('[data-anim="item-' + n + '"]', fig), [
@@ -2367,7 +2511,7 @@ html header.site-header .nav-pill{font-size:12px}
           { transform: 'translate(0,0)', opacity: 1 }
         ], { duration: 720, delay: 150 + start[i], easing: 'linear' });
       });
-    }, 0.4);
+    }, { ratio: 0.4 });
   }
 
   /* ---------- fence-mode: lift along the dotted arc, set-down, 3-dot puff, Delivered. flag ---------- */
@@ -2407,6 +2551,17 @@ html header.site-header .nav-pill{font-size:12px}
       var dip = [{ transform: 'none' }, { transform: 'translate(0,9px)', offset: 0.5 }, { transform: 'none' }];
       add(play(lifter, dip, { duration: 420 * k, delay: Math.max(0, T0 - 160 * k), easing: 'ease-in-out', fill: 'none' }));
       add(play(lifter, dip, { duration: 420 * k, delay: DOWN - 260 * k, easing: 'ease-in-out', fill: 'none' }));
+      // the two spill clods fall off the tailgate on the way up (drawn mid-fall at the apex) and are gone by the set-down
+      qsa('[data-anim="spill"]', truck).forEach(function (c) {
+        add(play(c, [
+          { opacity: 0, transform: 'translate(4px,-10px)' },
+          { opacity: 0, transform: 'translate(4px,-10px)', offset: 0.3 },
+          { opacity: 1, transform: 'none', offset: 0.45 },
+          { opacity: 1, transform: 'translate(-2px,8px)', offset: 0.62 },
+          { opacity: 0, transform: 'translate(-6px,34px)', offset: 0.85 },
+          { opacity: 0, transform: 'translate(-6px,34px)' }
+        ], { duration: LIFT, delay: T0, easing: 'linear', fill: 'both' }));
+      });
       qsa('circle', puff).forEach(function (c, i) {
         boxOrigin(c);
         add(play(c, [
@@ -2438,14 +2593,13 @@ html header.site-header .nav-pill{font-size:12px}
         if (++i < shots.length) stepTimer = win.setTimeout(next, 900);
       })();
     };
-    if (motion()) whenSeen(fig, function () { if (!played) run(1, false); }, 0.45);
+    part(fig, function () { if (!played) run(1, false); }, { ratio: 0.45 });
     if (btn) btn.addEventListener('click', function () { if (motion()) run(2, true); else stills(); });
   }
 
   /* ---------- charts: bars grow; the "This truck" row stays empty, dramatically ---------- */
   function chart(el) {
-    if (!el || !motion()) return;
-    whenSeen(el, function () {
+    part(el, function () {
       qsa('[data-anim="bar"]', el).forEach(function (b, i) {
         play(b, [{ transform: 'scaleX(0)' }, { transform: 'none' }], { duration: 950, delay: 120 + i * 140 });
       });
@@ -2457,14 +2611,16 @@ html header.site-header .nav-pill{font-size:12px}
         { transform: 'scaleX(.62)', offset: 0.72, easing: 'cubic-bezier(.6,0,.4,1)' },
         { transform: 'scaleX(0)' }
       ], { duration: 1900, delay: 780, easing: 'linear', fill: 'none' });
-    }, 0.45);
+    }, { ratio: 0.45 });
   }
 
-  /* ---------- seats-four: the chairs stack in, then the rental truck slides in from the right ---------- */
+  /* ---------- seats-four: the chairs stack in (panel 1), then the rental truck slides in from the right (panel 2).
+     Each panel plays when it is seen, so on phones, where the panels stack, the rental waits for its own. ---------- */
   function seats() {
     var fig = qs('#seats-four [data-art="two-truck-dining"]');
-    if (!fig || !motion()) return;
-    whenSeen(fig, function () {
+    if (!fig) return;
+    var panels = qsa('.art-frame', fig);
+    var chairs = part(panels[0] || fig, function () {
       [1, 2, 3, 4].forEach(function (n, i) {
         play(qs('[data-anim="chair-' + n + '"]', fig), [
           { transform: 'translate(0,-640px)', easing: 'cubic-bezier(.55,0,1,.45)' },
@@ -2473,19 +2629,21 @@ html header.site-header .nav-pill{font-size:12px}
           { transform: 'translate(0,0)' }
         ], { duration: 640, delay: 120 + i * 340, easing: 'linear' });
       });
+    }, { ratio: 0.4 });
+    part(panels[1] || fig, function () {
       play(qs('[data-anim="rental"]', fig), [
         { transform: 'translate(380px,0)', opacity: 0 },
         { opacity: 1, offset: 0.4 },
         { transform: 'translate(0,0)', opacity: 1 }
-      ], { duration: 1100, delay: 120 + 4 * 340 + 420, easing: 'cubic-bezier(.2,.7,.25,1)' });
-    }, 0.4);
+      ], { duration: 1100, easing: 'cubic-bezier(.2,.7,.25,1)' });
+    }, { ratio: 0.4, prev: chairs, gap: 120 + 4 * 340 + 420 });
   }
 
   /* ---------- family: the NO stamp thunks down (scale 1.4 to 1, ending at its -8deg) ---------- */
   function family() {
     var stamp = qs('#family [data-anim="stamp"]');
-    if (!stamp || !motion()) return;
-    whenSeen(qs('#family [data-art="family-seat-map"]') || stamp, function () {
+    if (!stamp) return;
+    part(qs('#family [data-art="family-seat-map"]') || stamp, function () {
       var base = win.getComputedStyle(stamp).transform;
       base = (!base || base === 'none') ? '' : base + ' ';
       play(stamp, [
@@ -2493,7 +2651,7 @@ html header.site-header .nav-pill{font-size:12px}
         { transform: base + 'rotate(0deg) scale(.96)', opacity: 1, offset: 0.72, easing: 'ease-out' },
         { transform: base + 'rotate(0deg) scale(1)', opacity: 1 }
       ], { duration: 440, delay: 300, easing: 'linear' });
-    }, 0.5);
+    }, { ratio: 0.5 });
   }
 
   /* ---------- airport: split-flap STATUS cells land on UBER one row at a time, GRANDMA last ---------- */
@@ -2502,8 +2660,10 @@ html header.site-header .nav-pill{font-size:12px}
     var board = sec && qs('[data-anim="arrivals"]', sec);
     if (!board || !motion()) return;
     var flaps = qsa('.flap[data-final]', board);
-    whenSeen(board, function () {
-      if (!flaps.length) return;
+    // parked a little before the board scrolls in (cells blank, widths locked); the letters spin once it is seen
+    var go = null;
+    var park = function () {
+      if (go || !flaps.length) return;
       var CH = 'ABCDEFGHIJKLMNOPRSTUVWXYZ0123456789';
       var widths = flaps.map(function (f) { return f.getBoundingClientRect().width; }); // all reads first
       var rows = flaps.map(function (f, i) {
@@ -2529,10 +2689,9 @@ html header.site-header .nav-pill{font-size:12px}
         row.el.removeAttribute('aria-hidden');
         flip(row.el, 140);
       };
-      var t0 = win.performance.now(), timer = 0;
-      var finishAll = function () { win.clearTimeout(timer); rows.forEach(land); };
+      var t0 = 0, timer = 0, safety = 0;
+      var finishAll = function () { win.clearTimeout(timer); win.clearTimeout(safety); rows.forEach(land); };
       stoppers.push(finishAll);
-      var safety = win.setTimeout(finishAll, 6000);
       var tick = function () {
         var now = win.performance.now() - t0, busy = false;
         rows.forEach(function (row) {
@@ -2552,18 +2711,19 @@ html header.site-header .nav-pill{font-size:12px}
         });
         if (busy) timer = win.setTimeout(tick, 70); else win.clearTimeout(safety);
       };
-      tick();
-    }, 0.6);
+      go = function () { go = function () {}; t0 = win.performance.now(); safety = win.setTimeout(finishAll, 6000); tick(); };
+    };
+    watch(board, park, function () { park(); if (go) go(); }, 0.6);
     // the zzz above the sleeping truck drift up once from the cab
     var fig = qs('[data-art="arrivals-board"]', sec);
-    whenSeen(fig, function () {
+    part(fig, function () {
       ['z-1', 'z-2', 'z-3'].forEach(function (n, i) {
         var z = qs('[data-anim="' + n + '"]', fig);
         if (!z) return;
         boxOrigin(z);
         play(z, [{ transform: 'translate(-26px,30px) scale(.4)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 1100, delay: 300 + i * 600, easing: 'cubic-bezier(.3,.6,.4,1)' });
       });
-    }, 0.5);
+    }, { ratio: 0.5 });
   }
 
   /* ---------- one-more-thing: the reveal, the cut, the split, sawdust, the plank on the scroll truck ---------- */
@@ -2592,23 +2752,42 @@ html header.site-header .nav-pill{font-size:12px}
     whenSeen(sec, fireReveal, 0.25);                 // ... or any big part of the section does
     // a reveal remembered from earlier in this session (app-ui.js marks html[data-reveal=seen]) keeps the plank
     win.setTimeout(function () { if (root.getAttribute('data-reveal') === 'seen') showPlank(false); }, 0);
-    if (!motion()) return;
-    var frames = qsa('.art-frame', sec);
-    var target = frames[2] ? (qs('svg', frames[2]) || frames[2]) : qs('[data-art="lumber-cut"]', sec);
-    lumberReady = !!target;
-    whenSeen(target, function () {
-      lumberPlaying = true;
-      // set first, so a failure further down still ends the scene: the reveal, then the plank on the scroll truck
-      win.setTimeout(function () { lumberPlaying = false; fireReveal(); showPlank(true); }, 3100);
-      var cut = qs('[data-anim="cut-line"]', sec), ha = qs('[data-anim="half-a"]', sec), hb = qs('[data-anim="half-b"]', sec);
-      var dust = qs('[data-anim="sawdust"]', sec), check = qs('[data-anim="check"]', sec), fit = qs('[data-anim="fit-updated"]', sec);
-      // 1. the cut line draws itself, top to bottom (scaleY keeps the non-scaling dash pattern intact)
-      if (cut) {
-        var bb = cut.getBBox();
-        svgOrigin(cut, r(bb.x), r(bb.y));
-        play(cut, [{ transform: 'scaleY(0)' }, { transform: 'none' }], { duration: 650, delay: 100, easing: 'cubic-bezier(.6,0,.4,1)' });
+    var cut = qs('[data-anim="cut-line"]', sec), ha = qs('[data-anim="half-a"]', sec), hb = qs('[data-anim="half-b"]', sec);
+    var dust = qs('[data-anim="sawdust"]', sec), check = qs('[data-anim="check"]', sec), fit = qs('[data-anim="fit-updated"]', sec);
+    // the status line breaks between sentences on phones, never inside one (see style-scenes.css)
+    if (fit && !fit.children.length) {
+      var bits = ((fit.textContent || '').match(/[^.]+\.?/g) || []).map(function (b) { return b.trim(); }).filter(Boolean);
+      if (bits.length > 1) {
+        fit.textContent = '';
+        bits.forEach(function (b, i) {
+          if (i) fit.appendChild(doc.createTextNode(' '));
+          var span = doc.createElement('span');
+          span.className = 'fs-nowrap';
+          span.textContent = b;
+          fit.appendChild(span);
+        });
       }
-      // 2. the board splits with a 6px gap (about 26 units in a 277px frame), then each half goes home
+    }
+    // a visitor who saw the headline and leaves the section before the lumber plays still gets the plank
+    if (hasIO) {
+      var away = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { if (!en.isIntersecting && revealed && !plankShown && !lumberPlaying) showPlank(true); });
+      });
+      away.observe(sec);
+    }
+    if (!motion()) return;
+    // three panels: each step plays when its own panel is seen (they stack on phones), never before the step ahead of it
+    var frameOf = function (el) { return el.closest('.art-frame') || qs('[data-art="lumber-cut"]', sec) || sec; };
+    var ended = false, safety = 0;
+    var end = function () { if (ended) return; ended = true; win.clearTimeout(safety); lumberPlaying = false; fireReveal(); showPlank(true); };
+    // 1. the cut line draws itself, top to bottom (scaleY keeps the non-scaling dash pattern intact)
+    var cutPart = part(cut && frameOf(cut), function () {
+      var bb = cut.getBBox();
+      svgOrigin(cut, r(bb.x), r(bb.y));
+      play(cut, [{ transform: 'scaleY(0)' }, { transform: 'none' }], { duration: 650, delay: 100, easing: 'cubic-bezier(.6,0,.4,1)' });
+    }, { ratio: 0.5 });
+    // 2. the board splits with a 6px gap (about 26 units in a 277px frame), then each half goes home
+    var splitPart = part((ha || hb) && frameOf(ha || hb), function () {
       if (hb) {
         boxOrigin(hb);
         play(hb, [
@@ -2618,7 +2797,7 @@ html header.site-header .nav-pill{font-size:12px}
           { transform: 'translate(0,0) rotate(0deg)', offset: 0.84, easing: 'ease-out' },
           { transform: 'translate(0,-10px) rotate(0deg)', offset: 0.92, easing: 'ease-in' },
           { transform: 'translate(0,0) rotate(0deg)' }
-        ], { duration: 1350, delay: 800, easing: 'linear' });
+        ], { duration: 1350, delay: 0, easing: 'linear' });
       }
       if (ha) {
         play(ha, [
@@ -2628,7 +2807,7 @@ html header.site-header .nav-pill{font-size:12px}
           { transform: 'translate(0,0)', offset: 0.78, easing: 'ease-out' },
           { transform: 'translate(0,-6px)', offset: 0.89, easing: 'ease-in' },
           { transform: 'translate(0,0)' }
-        ], { duration: 1350, delay: 800, easing: 'linear' });
+        ], { duration: 1350, delay: 0, easing: 'linear' });
       }
       // 3. tan sawdust confetti falls from the cut to where it rests
       qsa('circle', dust).forEach(function (c, i) {
@@ -2639,41 +2818,48 @@ html header.site-header .nav-pill{font-size:12px}
           { transform: 'translate(' + r(sx - cx) + 'px,' + r(sy - cy) + 'px) scale(.3)', opacity: 0 },
           { opacity: 1, offset: 0.15 },
           { transform: 'none', opacity: 1 }
-        ], { duration: 950 + (i % 5) * 110, delay: 1000 + i * 45, easing: 'cubic-bezier(.35,0,.6,1)' });
+        ], { duration: 950 + (i % 5) * 110, delay: 200 + i * 45, easing: 'cubic-bezier(.35,0,.6,1)' });
       });
-      // 4. the check pops; 5. the status line flips in; 6. the scroll-track truck gets its half 2x4
+      // 4. the check pops
       if (check) {
         boxOrigin(check);
-        play(check, [{ transform: 'scale(0)' }, { transform: 'scale(1.15)', offset: 0.7 }, { transform: 'none' }], { duration: 440, delay: 2250, easing: 'ease-out' });
+        play(check, [{ transform: 'scale(0)' }, { transform: 'scale(1.15)', offset: 0.7 }, { transform: 'none' }], { duration: 440, delay: 1450, easing: 'ease-out' });
       }
-      play(fit, [{ transform: 'perspective(600px) rotateX(-90deg)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 520, delay: 2550, easing: 'cubic-bezier(.2,.7,.3,1)' });
-    }, 0.5);
+    }, { ratio: 0.5, prev: cutPart, gap: 800, onStart: function () { lumberPlaying = true; safety = win.setTimeout(end, fit ? 6000 : 2300); } });
+    lumberReady = !!splitPart;
+    // 5. the status line flips in once it is seen too; 6. then the scroll-track truck gets its half 2x4
+    part(splitPart && fit, function () {
+      play(fit, [{ transform: 'perspective(600px) rotateX(-90deg)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 520, easing: 'cubic-bezier(.2,.7,.3,1)' });
+    }, { ratio: 0.6, prev: splitPart, gap: 1750, onStart: function () { win.setTimeout(end, 560); } });
   }
 
   /* ---------- no-room: the cue, then the eyebrow, then the headline ---------- */
   function noRoom() {
     var sec = qs('#no-room');
-    if (!sec || !motion()) return;
-    whenSeen(qs('.wrap', sec) || sec, function () {
+    if (!sec) return;
+    var words = part(qs('.wrap', sec) || sec, function () {
       ['no-room-cue', 'no-room-eyebrow', 'no-room-headline'].forEach(function (n, i) {
         play(qs('[data-anim="' + n + '"]', sec), [{ opacity: 0, transform: 'translateY(14px)' }, { opacity: 1, transform: 'none' }], { duration: 650, delay: 150 + i * 800 });
       });
-      play(qs('[data-anim="spotlight"]', sec), [{ opacity: 0 }, { opacity: 1 }], { duration: 900, delay: 1750, easing: 'ease-out' });
-    }, 0.6);
+    }, { ratio: 0.6 });
+    // the spotlight comes up after the headline, once its stage is in view too
+    var spot = qs('[data-anim="spotlight"]', sec);
+    part(spot && (spot.ownerSVGElement || spot), function () {
+      play(spot, [{ opacity: 0 }, { opacity: 1 }], { duration: 900, easing: 'ease-out' });
+    }, { ratio: 0.3, prev: words, gap: 1750 });
   }
 
   /* ---------- final-cta: the truck leaves its X for stage right with the plank; tire marks stay ---------- */
   function finalCta() {
     var sec = qs('#final-cta');
     var strip = sec && qs('svg.stage-strip', sec);
-    if (!strip || !motion()) return;
-    whenSeen(strip, function () {
+    part(strip, function () {
       play(qs('[data-anim="truck"]', strip), [
         { transform: 'translate(1200px,124px)' },
         { transform: 'translate(1340px,124px)' }
       ], { duration: 1700, delay: 700, easing: 'cubic-bezier(.55,0,.35,1)' });
       play(qs('[data-anim="tire-marks"]', strip), [{ opacity: 0 }, { opacity: 1 }], { duration: 500, delay: 950, easing: 'ease-out' });
-    }, 0.9);
+    }, { ratio: 0.9 });
   }
 
   /* ---------- thank-you: the fake ending's tiny arrow nudges, then rests ---------- */
@@ -2683,7 +2869,8 @@ html header.site-header .nav-pill{font-size:12px}
   function reveals() {
     if (!motion() || !hasIO) return;
     var skipIn = '#hero, #will-it-fit, #no-room, [data-anim="fake-gap"]';
-    var notMe = '.wrap, .split, .split-a, .split-b, .section-head, [data-anim="fit-updated"], script, style';
+    var notMe = '.wrap, .split, .split-a, .split-b, .section-head, [data-anim="fit-updated"], .cue, script, style';
+    // (transcript cues sit on a slide's bottom edge, where a reveal would keep them hidden while the slide fills the screen)
     var els = qsa('main > section .wrap > *, main > section .split-a > *, main > section .split-b > *, main > section .section-head > *')
       .filter(function (el) { return !el.closest(skipIn) && !el.matches(notMe); });
     var show = new IntersectionObserver(function (entries) {
@@ -2712,14 +2899,18 @@ html header.site-header .nav-pill{font-size:12px}
   }
 
   /* If the visitor turns on reduced motion mid-visit, everything jumps to its end state. */
+  function settle() {
+    live.slice().forEach(function (a) { try { a.finish(); } catch (err) { /* not finishable */ } });
+    stoppers.forEach(function (f) { try { f(); } catch (err) { /* already at rest */ } });
+    qsa('.reveal').forEach(function (el) { el.classList.add('is-in'); });
+  }
   function watchPreference() {
+    win.addEventListener('beforeprint', settle); // a printout shows every end state, parked scenes included
     if (!mq) return;
     var onChange = function (e) {
       if (!e.matches) return;
       reduce = true;
-      live.slice().forEach(function (a) { try { a.finish(); } catch (err) { /* not finishable */ } });
-      stoppers.forEach(function (f) { try { f(); } catch (err) { /* already at rest */ } });
-      qsa('.reveal').forEach(function (el) { el.classList.add('is-in'); });
+      settle();
       showPlank(false);
     };
     if (mq.addEventListener) mq.addEventListener('change', onChange);
@@ -2771,18 +2962,23 @@ html header.site-header .nav-pill{font-size:12px}
   var toastTimer = 0, toastSeq = 0;
 
   function overlap(a, b) { return Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top)); }
-  // On phones, keep the toast clear of the widget result: bottom by default, top (under the nav) when the
-  // result sits behind the bottom spot and the top spot covers less of it. Re-checked while the page scrolls;
-  // the class only changes when the choice does, so the entrance animation is not restarted on every frame.
+  // At every width, keep the toast clear of the widget result: bottom by default, top (under the nav) when the
+  // result (plus an 8px margin) sits behind the bottom spot and the top spot covers less of it. Re-checked on
+  // scroll, resize and when the card changes size; the class only changes when the choice does, so the
+  // entrance animation is not restarted on every frame.
   function placeToast() {
+    if (!toastEl) return;
     var isTop = toastEl.classList.contains('toast--top');
     var want = false;
-    if (phoneMQ.matches && resultEl && toastEl.textContent) {
-      var r = resultEl.getBoundingClientRect(), t = toastEl.getBoundingClientRect(), vh = win.innerHeight;
+    if (resultEl && toastEl.textContent) {
+      var c = resultEl.getBoundingClientRect(), t = toastEl.getBoundingClientRect(), vh = win.innerHeight;
+      var r = { top: c.top - 8, bottom: c.bottom + 8 };
       var navH = parseFloat(win.getComputedStyle(root).getPropertyValue('--nav-h')) || 56;
+      var gap = phoneMQ.matches ? 16 : 24;
       var topSpot = isTop ? t : { top: navH + 12, bottom: navH + 12 + t.height };
-      var lowSpot = isTop ? { top: vh - 16 - t.height, bottom: vh - 16 } : t;
-      if (r.height && r.bottom > 0 && r.top < vh) {
+      var lowSpot = isTop ? { top: vh - gap - t.height, bottom: vh - gap } : t;
+      // Both spots share the toast's centered column, so only a card under that column can be covered.
+      if (c.height && c.bottom > 0 && c.top < vh && c.right + 8 > t.left && c.left - 8 < t.right) {
         var low = overlap(r, lowSpot);
         want = low > 0 && overlap(r, topSpot) < low;
       }
@@ -2790,11 +2986,14 @@ html header.site-header .nav-pill{font-size:12px}
     if (want !== isTop) toastEl.classList.toggle('toast--top', want);
   }
   var toastTick = false;
-  win.addEventListener('scroll', function () {
+  function queuePlace() {
     if (toastTick || !toastEl || !toastEl.textContent) return;
     toastTick = true;
     (win.requestAnimationFrame || setTimeout)(function () { toastTick = false; placeToast(); });
-  }, { passive: true });
+  }
+  win.addEventListener('scroll', queuePlace, { passive: true });
+  win.addEventListener('resize', queuePlace);
+  if (resultEl && 'ResizeObserver' in win) new win.ResizeObserver(queuePlace).observe(resultEl);
   function hideToast() {
     clearTimeout(toastTimer);
     if (!toastEl) return;
@@ -2811,12 +3010,18 @@ html header.site-header .nav-pill{font-size:12px}
       toastEl.textContent = text;
       placeToast();
       if (motionOK()) restart(toastEl, 'is-in');
-      toastTimer = setTimeout(hideToast, 3500);
+      // A pointer already resting on the toast spot keeps it up until it leaves.
+      if (!toastHover) toastTimer = setTimeout(hideToast, 3500);
     }, 40);
   }
+  var toastHover = false;
   if (toastEl) {
-    toastEl.addEventListener('mouseenter', function () { clearTimeout(toastTimer); });
-    toastEl.addEventListener('mouseleave', function () { if (toastEl.textContent) toastTimer = setTimeout(hideToast, 1500); });
+    toastEl.addEventListener('mouseenter', function () { toastHover = true; clearTimeout(toastTimer); });
+    toastEl.addEventListener('mouseleave', function () {
+      toastHover = false;
+      clearTimeout(toastTimer);
+      if (toastEl.textContent) toastTimer = setTimeout(hideToast, 1500);
+    });
   }
   doc.addEventListener('click', function (e) {
     var t = closest(e.target, '[data-toast]');
@@ -2870,7 +3075,17 @@ html header.site-header .nav-pill{font-size:12px}
     header.addEventListener('focusout', function (e) {
       if (isOpen() && e.relatedTarget && !header.contains(e.relatedTarget)) setMenu(false);
     });
-    onMQ(navMQ, function () { if (!navMQ.matches && isOpen()) setMenu(false); });
+    // Widening hides the toggle and narrowing hides the closed list: keep a keyboard user in the header
+    // instead of dropping focus to the page. The blur check covers a browser that drops focus before the change event.
+    function refocus() { focusSafe(navMQ.matches ? toggle : firstLink()); }
+    toggle.addEventListener('blur', function () {
+      win.setTimeout(function () { if (doc.activeElement === doc.body && !navMQ.matches && !toggle.getClientRects().length) refocus(); }, 0);
+    });
+    onMQ(navMQ, function () {
+      var a = doc.activeElement, wasToggle = a === toggle, inNav = nav.contains(a);
+      if (!navMQ.matches && isOpen()) setMenu(false);
+      if ((!navMQ.matches && wasToggle) || (navMQ.matches && inNav && !isOpen())) refocus();
+    });
   })();
 
   /* ================= FAQ: native details, one open at a time ================= */
@@ -2913,8 +3128,8 @@ html header.site-header .nav-pill{font-size:12px}
     var LOCK_BEFORE = 'Fits, eventually', LOCK_AFTER = 'Fits if halved';
     var COPIED = 'Copied! Go text it.';
     var CLIPBOARD_NO = 'Clipboard said no. The text is selected, so copy it the usual way.';
-    var REPLY = 'I\'d love to, but it\'s a small truck.';
-    var REPLY_COPIED = 'Copied. You\'ll use it a lot.';
+    var REPLY = 'I’d love to, but it’s a small truck.';
+    var REPLY_COPIED = 'Copied. You’ll use it a lot.';
     var EXTRA = { table: 'Add the table', cut: 'Cut it in half', reply: 'Copy reply' };
     var POS = { 1: 0, 2: 0.333, 3: 0.667, 4: 1 };
 
@@ -2928,27 +3143,27 @@ html header.site-header .nav-pill{font-size:12px}
       '2x4-open': { item: 'A 2x4', v: 'Not yet.', d: 'A whole 2x4 is longer than the bed. But if you cut 2x4s in half, you could easily fit them in the truck.', t: 'Lumber: pending', m: 2, s: 'plank', x: 'cut', chip: '2x4' },
       'half': { item: 'Half a 2x4', v: 'Yes.', d: 'Half a 2x4. In the truck. Easily. Bonus: now you have twice as many. [sustained applause]', t: 'One more thing: unlocked', m: 1, s: 'half' },
       'half-early': { item: 'Half a 2x4', v: 'Yes.', d: 'You figured it out early. Half a 2x4. In the truck. Easily. Act surprised at the end.', t: 'Spoiler: yours', m: 1, s: 'half' },
-      'dirt': { item: 'Dirt', v: 'Yes.', d: 'It\'s like the perfect vehicle for moving dirt from one side of the yard to another. Fence in the way? Just pick it up and put it on the other side.', t: 'Fence Mode: ready', m: 1, s: 'dirt', chip: 'dirt' },
-      'small-things': { item: 'Other small things', v: 'Yes.', d: 'This is what it\'s for: a truck bed you can load other small things into. Super cute.', t: 'Built for this', m: 1, s: 'small', chip: 'small-things' },
+      'dirt': { item: 'Dirt', v: 'Yes.', d: 'It’s like the perfect vehicle for moving dirt from one side of the yard to another. Fence in the way? Just pick it up and put it on the other side.', t: 'Fence Mode: ready', m: 1, s: 'dirt', chip: 'dirt' },
+      'small-things': { item: 'Other small things', v: 'Yes.', d: 'This is what it’s for: a truck bed you can load other small things into. Super cute.', t: 'Built for this', m: 1, s: 'small', chip: 'small-things' },
       'kid-2': { item: 'Kid #2', v: 'Absolutely not.', d: 'One kid can ride in the seat next to you. The second kid does not go in the bed. Not ever, not for one block. Kids ride buckled in real seats; the bed is for dirt, chairs and half a 2x4.', t: 'Fine print: enforced', m: 'no', s: 'kid', chip: 'kid-2' },
-      'family': { item: 'Visiting family (2+)', v: 'Uber.', d: 'There\'s more than one, so they\'ll know they need to get an Uber. No more of those annoying trips to the airport.', t: 'Airport runs: retired', m: 4, s: 'uber', chip: 'family' },
-      'one-relative': { item: 'One relative', v: 'Technically.', d: 'A party of one fits in the seat next to you. We\'d keep that quiet. Two or more, and they\'ll know they need to get an Uber.', t: 'Party of one: pending', m: 1, s: 'seat' },
+      'family': { item: 'Visiting family (2+)', v: 'Uber.', d: 'There’s more than one, so they’ll know they need to get an Uber. No more of those annoying trips to the airport.', t: 'Airport runs: retired', m: 4, s: 'uber', chip: 'family' },
+      'one-relative': { item: 'One relative', v: 'Technically.', d: 'A party of one fits in the seat next to you. We’d keep that quiet. Two or more, and they’ll know they need to get an Uber.', t: 'Party of one: pending', m: 1, s: 'seat' },
       'pet': { item: 'Pet', v: 'Up front.', d: 'Pets ride secured in the cab, not in the bed. The bed is for dirt and chairs.', t: 'Cab only', m: 1, s: 'paw' },
-      'moving': { item: 'Moving', v: 'No.', d: 'Suggested reply: “I\'d love to, but it\'s a small truck.”', t: 'Favor Protection: active', m: 3, s: 'bubble', x: 'reply' },
+      'moving': { item: 'Moving', v: 'No.', d: 'Suggested reply: “I’d love to, but it’s a small truck.”', t: 'Favor Protection: active', m: 3, s: 'bubble', x: 'reply' },
       'long': { item: 'Long things', v: 'No.', d: 'Longer than your truck. We have a plan for long things. Stay until the end.', t: 'Long things: pending', m: 3, s: 'ladder' },
-      'long-after': { item: 'Long things', v: 'No.', d: 'Even cut in half, it\'s bigger than your truck.', t: 'Try quarters. We won\'t watch.', m: 3, s: 'ladder' },
-      'sheet': { item: 'Sheet goods', v: 'We\'d rather not.', d: '4x8 plywood: we\'ve discussed it, and we\'d rather not.', t: 'Sheet goods: discussed', m: 3, s: 'plywood' },
-      'fence': { item: 'Fence', v: 'Over.', d: 'Don\'t go around it. Pick the truck up and put it on the other side. Lift with your legs.', t: 'Fence Mode', m: 1, s: 'fence' },
-      'garage': { item: 'Garage', v: 'Easily.', d: 'This car* could have easily fit in the fun-size garages at Hobbitville. (Garrett\'s been.) Yours will feel roomy. *Truck.', t: 'Fun-size garage compatible', m: 1, s: 'garage' },
-      'mattress': { item: 'Mattress', v: 'Taco.', d: 'Twin? Maybe, folded like a taco. Queen? She\'s bigger than your truck, and she knows it.', t: 'Fold it and believe', m: 2, pos: 0.5, s: 'taco' },
-      'big': { item: 'Big furniture', v: 'No.', d: 'That\'s bigger than your truck, which means nobody will ever ask you to haul it. You\'re welcome.', t: 'Favor Protection: active', m: 4, tip: 1, s: 'bigbox' },
-      'smart-car': { item: 'Smart car', v: 'No.', d: 'Respectfully, no. They\'re practically family.', t: 'Super cute', m: 3, s: 'smartcar' },
-      'truck': { item: 'Truck', v: 'No.', d: 'It can\'t fit a truck. But it could fit in one, which is how the table gets home.', t: 'Two-Truck Solution', m: 3, s: 'boxtruck' },
-      'friend': { item: 'Friend', v: 'One.', d: 'One friend fits in the seat next to you. Their couch does not. That\'s the beauty of it.', t: 'Favor Protection: active', m: 1, s: 'seat' },
+      'long-after': { item: 'Long things', v: 'No.', d: 'Even cut in half, it’s bigger than your truck.', t: 'Try quarters. We won’t watch.', m: 3, s: 'ladder' },
+      'sheet': { item: 'Sheet goods', v: 'We’d rather not.', d: '4x8 plywood: we’ve discussed it, and we’d rather not.', t: 'Sheet goods: discussed', m: 3, s: 'plywood' },
+      'fence': { item: 'Fence', v: 'Over.', d: 'Don’t go around it. Pick the truck up and put it on the other side. Lift with your legs.', t: 'Fence Mode', m: 1, s: 'fence' },
+      'garage': { item: 'Garage', v: 'Easily.', d: 'This car* could have easily fit in the fun-size garages at Hobbitville. (Garrett’s been.) Yours will feel roomy. *Truck.', t: 'Fun-size garage compatible', m: 1, s: 'garage' },
+      'mattress': { item: 'Mattress', v: 'Taco.', d: 'Twin? Maybe, folded like a taco. Queen? She’s bigger than your truck, and she knows it.', t: 'Fold it and believe', m: 2, pos: 0.5, s: 'taco' },
+      'big': { item: 'Big furniture', v: 'No.', d: 'That’s bigger than your truck, which means nobody will ever ask you to haul it. You’re welcome.', t: 'Favor Protection: active', m: 4, tip: 1, s: 'bigbox' },
+      'smart-car': { item: 'Smart car', v: 'No.', d: 'Respectfully, no. They’re practically family.', t: 'Super cute', m: 3, s: 'smartcar' },
+      'truck': { item: 'Truck', v: 'No.', d: 'It can’t fit a truck. But it could fit in one, which is how the table gets home.', t: 'Two-Truck Solution', m: 3, s: 'boxtruck' },
+      'friend': { item: 'Friend', v: 'One.', d: 'One friend fits in the seat next to you. Their couch does not. That’s the beauty of it.', t: 'Favor Protection: active', m: 1, s: 'seat' },
       'partner': { item: 'Partner', v: 'Seat 2.', d: 'Right next to you, buckled in. Date night was always a two-seater.', t: 'Seat 2: taken', m: 1, s: 'seat' },
-      'me': { item: 'Me', v: 'Yes.', d: 'You\'re the driver. You drive a truck. Go ahead, say it.', t: 'I drive a truck', m: 1, s: 'wheel' },
-      'fallback': { item: 'Anything else', v: 'Maybe.', d: 'If it\'s smaller than a dining chair, it fits. If it\'s bigger than a couch, nobody will ask. Either way, you win.', t: 'Fit Engine: confident-ish', m: 1, pos: 0.167, s: 'crate' },
-      'empty': { item: '', v: 'Fits.', d: 'Nothing? That fits perfectly. It\'s the only load we can guarantee 100%.', t: 'Empty bed', m: 1, s: '' }
+      'me': { item: 'Me', v: 'Yes.', d: 'You’re the driver. You drive a truck. Go ahead, say it.', t: 'I drive a truck', m: 1, s: 'wheel' },
+      'fallback': { item: 'Anything else', v: 'Maybe.', d: 'If it’s smaller than a dining chair, it fits. If it’s bigger than a couch, nobody will ask. Either way, you win. If it’s a person, they ride in a seat. Never in the bed.', t: 'Fit Engine: confident-ish', m: 1, pos: 0.167, s: 'crate' },
+      'empty': { item: '', v: 'Fits.', d: 'Nothing? That fits perfectly. It’s the only load we can guarantee 100%.', t: 'Empty bed', m: 1, s: '' }
     };
     var CHIP = { 'couch': 'couch', 'dining-table': 'dining-table', 'chairs': 'chairs', '2x4': '2x4', 'dirt': 'dirt', 'small-things': 'small-things', 'kid-2': 'kid-2', 'family': 'family' };
 
@@ -3016,14 +3231,24 @@ html header.site-header .nav-pill{font-size:12px}
         return { exact: exact, words: exact ? words : words.map(singular) };
       });
     }
-    var REL = compile(['mom', 'dad', 'mother', 'father', 'grandma', 'grandpa', 'brother', 'sister', 'aunt', 'uncle', 'cousin', 'mother-in-law', 'father-in-law', '=parent', '=relative', '=grandparent', '=guest', '=in-law']);
+    // Deck one-relative words, plus any single person: people ride in seats, so they get the seat answer.
+    var REL = compile(['mom', 'dad', 'mother', 'father', 'grandma', 'grandpa', 'brother', 'sister', 'aunt', 'uncle', 'cousin', 'mother-in-law', 'father-in-law', '=parent', '=relative', '=grandparent', '=guest', '=in-law',
+      'grandmother', 'grandfather', 'granny', 'nana', 'mama', 'papa', 'mommy', 'daddy', 'mum', 'stepmom', 'stepdad', 'sibling', 'person', 'human', 'adult', 'man', 'woman', 'guy', 'lady',
+      'gentleman', 'dude', 'passenger', 'rider', 'hitchhiker', 'stranger', 'someone', 'somebody', 'anyone', 'anybody', 'nanny', 'babysitter']);
+    /* Safety first: every group about people, kids or pets is checked before any cargo group, so a sentence
+       that names a person next to dirt or chairs never gets a "fits" verdict. */
     var GROUPS = [
-      ['kid-2', ['kid', 'child', 'children', 'baby', 'toddler', 'son', 'daughter', '=twins', 'teen', 'teenager']],
-      ['pet', ['dog', 'cat', 'puppy', 'kitten', 'pet']],
+      ['kid-2', ['kid', 'child', 'children', 'baby', 'toddler', 'son', 'daughter', '=twins', 'teen', 'teenager', 'kiddo', 'infant', 'newborn', 'boy', 'girl', 'tween', 'preteen',
+        'grandkid', 'grandchild', 'grandchildren', 'grandson', 'granddaughter', 'nephew', 'niece', 'stepson', 'stepdaughter', 'stepkid', 'triplets']],
+      ['pet', ['dog', 'cat', 'puppy', 'kitten', 'pet', 'pup', 'doggo', 'doggy', 'pooch', 'kitty', 'bunny', 'rabbit', 'hamster', 'guinea pig', 'ferret', 'bird', 'parrot', 'horse', 'pony',
+        'goat', 'pig', 'turtle', 'tortoise', 'lizard', 'snake', 'fish', 'goldfish', 'animal', 'retriever', 'labrador', 'poodle', 'terrier', 'corgi', 'pug', 'beagle', 'husky', 'chihuahua', 'dachshund']],
+      ['family', ['family', '=parents', '=in-laws', '=in laws', '=inlaws', '=relatives', '=cousins', '=grandparents', 'everyone', 'airport', 'uber', '=guests', 'visiting family',
+        'everybody', '=people', '=men', '=women', '=folks', 'crowd', 'team', 'squad', 'crew']],
+      ['one-relative', null],
+      ['friend', ['friend', 'buddy', 'coworker', 'neighbor', 'roommate', 'boss']],
+      ['partner', ['wife', 'husband', 'spouse', 'partner', 'girlfriend', 'boyfriend', 'fiance', 'fiancé', 'fiancée', 'date']],
       ['dirt', ['dirt', 'soil', 'topsoil', 'mulch', 'gravel', 'sand', 'compost', 'rock']],
       ['moving', ['move', 'moving', 'movers']],
-      ['family', ['family', '=parents', '=in-laws', '=in laws', '=inlaws', '=relatives', '=cousins', '=grandparents', 'everyone', 'airport', 'uber', '=guests', 'visiting family']],
-      ['one-relative', null],
       ['lumber', ['2x4', '2 x 4', 'two by four', 'lumber', 'plank', 'stud']],
       ['long', ['ladder', 'kayak', 'canoe', 'surfboard', 'pipe', 'rug', 'christmas tree', 'long thing']],
       ['sheet', ['plywood', 'drywall', 'sheetrock', 'osb', 'sheet good']],
@@ -3036,8 +3261,6 @@ html header.site-header .nav-pill{font-size:12px}
       ['dining-table', ['table', 'desk']],
       ['smart-car', ['smart car', 'smartcar']],
       ['truck', ['truck', 'pickup']],
-      ['friend', ['friend', 'buddy', 'coworker', 'neighbor', 'roommate', 'boss']],
-      ['partner', ['wife', 'husband', 'spouse', 'partner', 'girlfriend', 'boyfriend', 'fiance', 'fiancé', 'fiancée', 'date']],
       ['me', ['me', 'myself']],
       ['small-things', ['toaster', 'plant', 'succulent', 'shoebox', 'lunchbox', 'groceries', 'grocery', 'lamp', 'cooler', 'box', 'bag', 'pizza', 'laptop', 'backpack', 'small thing']]
     ].map(function (g) { return { key: g[0], terms: g[1] ? compile(g[1]) : REL }; });
@@ -3056,8 +3279,25 @@ html header.site-header .nav-pill{font-size:12px}
       }
       return false;
     }
+    // Emoji become words before matching: kids, people, groups and animals land in their safe groups,
+    // and a few cargo emoji get their real answer. Anything else is a separator.
+    var EMOJI = [
+      [/[\u{1F476}\u{1F9D2}\u{1F466}\u{1F467}\u{1F47C}\u{1F37C}\u{1F6BC}]/gu, ' kid '],
+      [/[\u{1F46A}-\u{1F46D}\u{1F46F}\u{1F48F}\u{1F491}\u{1F465}\u{1FAC2}\u{1F93C}]/gu, ' people '],
+      [/[\u{1F468}\u{1F469}\u{1F9D1}\u{1F464}\u{1F46E}\u{1F470}-\u{1F475}\u{1F477}\u{1F478}\u{1F481}-\u{1F483}\u{1F486}\u{1F487}\u{1F574}\u{1F575}\u{1F57A}\u{1F5E3}\u{1F385}\u{1F3C2}-\u{1F3C4}\u{1F3C7}\u{1F3CA}-\u{1F3CC}\u{1F645}-\u{1F647}\u{1F64B}-\u{1F64F}\u{1F6A3}\u{1F6B4}-\u{1F6B6}\u{1F6C0}\u{1F6CC}\u{1F926}\u{1F930}-\u{1F939}\u{1F93D}\u{1F93E}\u{1F9B8}\u{1F9B9}\u{1F9CD}-\u{1F9CF}\u{1F9D3}-\u{1F9DF}\u{1FAC3}-\u{1FAC5}\u{1F600}-\u{1F637}\u{1F641}-\u{1F644}\u{1F910}-\u{1F925}\u{1F927}-\u{1F92F}\u{1F970}-\u{1F97A}\u{1F9D0}\u{1FAE0}-\u{1FAE8}\u{263A}\u{2639}\u{26F9}]/gu, ' person '],
+      [/[\u{1F400}-\u{1F43F}\u{1F54A}\u{1F577}\u{1F980}-\u{1F99F}\u{1F9A1}-\u{1F9AE}\u{1FAB0}-\u{1FAB3}\u{1FABC}\u{1FABF}\u{1FACE}\u{1FACF}]/gu, ' pet '],
+      [/\u{1F6CB}/gu, ' couch '], [/\u{1FA91}/gu, ' chair '], [/\u{1FAB5}/gu, ' lumber '], [/\u{1F6CF}/gu, ' mattress '], [/\u{1FA9C}/gu, ' ladder '],
+      [/[\u{1F69A}\u{1F69B}\u{1F6FB}]/gu, ' truck '], [/[\u{1FAB4}\u{1F331}]/gu, ' plant '], [/\u{1FAA8}/gu, ' rock '], [/\u{1F4E6}/gu, ' box ']
+    ];
+    function deEmoji(s) {
+      for (var e = 0; e < EMOJI.length; e++) s = s.replace(EMOJI[e][0], EMOJI[e][1]);
+      return s;
+    }
     function classify(text) {
-      var toks = tokenize(text.toLowerCase().trim().slice(0, 60));
+      var low = deEmoji(String(text).slice(0, 400)).toLowerCase().trim();
+      var toks = tokenize(low);
+      // "twin" on its own is a person (a sibling); next to bed words it is a mattress size.
+      if (!/\b(mattress|bed|beds|bedding|size|sheets?|xl|bunk|frame)\b/.test(low)) toks = toks.map(function (t) { return t === 'twin' ? 'sibling' : t; });
       var sing = toks.map(singular);
       var relCount = 0, relPlural = false;
       toks.forEach(function (t, k) {
@@ -3218,6 +3458,7 @@ html header.site-header .nav-pill{font-size:12px}
       var r = R[key];
       var item = o.item != null ? o.item : r.item;
       current = { key: key, item: item, r: r };
+      setPending(false);
       if (stage) stage.removeAttribute('data-measuring');
       resultEl.setAttribute('data-result', key);
       itemEl.textContent = item;
@@ -3242,8 +3483,10 @@ html header.site-header .nav-pill{font-size:12px}
       var k = resolve(key);
       var item = o.item != null ? o.item : R[k].item;
       setPressed(o.chip !== undefined ? o.chip : (R[k].chip || null));
-      current = { key: k, item: item, r: R[k] };
       if (!motionOK()) { show(key, { item: item }); return; }
+      // Nothing to copy until the result lands: the old one is gone and the new one is not shown yet.
+      current = null;
+      setPending(true);
       if (stage) stage.setAttribute('data-measuring', '');
       resultEl.setAttribute('data-result', 'measuring');
       itemEl.textContent = item;
@@ -3258,10 +3501,20 @@ html header.site-header .nav-pill{font-size:12px}
       timers.push(setTimeout(function () { if (g === gen) show(key, { item: item }); }, 1200));
     }
 
+    var pending = false;
+    // While measuring or mid-cut, Copy stays focusable but does nothing (aria-disabled), so it can never
+    // copy a result the card has not shown yet.
+    function setPending(p) {
+      pending = !!p;
+      if (!copyBtn) return;
+      if (pending) copyBtn.setAttribute('aria-disabled', 'true'); else copyBtn.removeAttribute('aria-disabled');
+    }
+
     function idle(caption) {
       gen++;
       clearTimers();
       current = null;
+      setPending(false);
       setPressed(null);
       hideFallback();
       if (stage) stage.removeAttribute('data-measuring');
@@ -3288,6 +3541,7 @@ html header.site-header .nav-pill{font-size:12px}
       setPressed(null);
       function finish() { if (g === gen) show('half', { item: R.half.item, sil: 'halfcut' }); }
       if (!motionOK() || !silEl || !silEl.animate) { finish(); return; }
+      setPending(true);
       silEl.innerHTML = '<g class="fit-sil">' + CUT + '</g>';
       var a = $('.fit-cut-a', silEl), b = $('.fit-cut-b', silEl), line = $('.fit-cut-line', silEl);
       play(line, [{ transform: 'scaleY(0)' }, { transform: 'scaleY(1)' }], { duration: 260, easing: 'ease-out', fill: 'forwards' })
@@ -3357,9 +3611,13 @@ html header.site-header .nav-pill{font-size:12px}
       });
     }
     function submitTyped() {
-      var raw = ((input && input.value) || '').trim().slice(0, 60);
+      var full = ((input && input.value) || '').replace(/\s+/g, ' ').trim();
+      // Shown text: 60 characters at most, cut on whole characters so an emoji is never split.
+      var chars = Array.from ? Array.from(full) : full.split('');
+      var raw = chars.length > 60 ? chars.slice(0, 60).join('').trim() : full;
       if (!raw) { run('empty', { item: '', chip: null }); return; }
-      var key = classify(raw);
+      // Matching reads everything that was typed, so a person named past the cut still gets the safe answer.
+      var key = classify(full);
       run(key, { item: raw, chip: R[resolve(key)].chip || null });
     }
     if (input) {
@@ -3383,7 +3641,7 @@ html header.site-header .nav-pill{font-size:12px}
       if (kind === 'cut') cut();
       if (had || doc.activeElement === doc.body) focusSafe(copyBtn);
     });
-    if (copyBtn) copyBtn.addEventListener('click', function () { var t = shareText(); if (t) copyText(t, COPIED); });
+    if (copyBtn) copyBtn.addEventListener('click', function () { if (pending) return; var t = shareText(); if (t) copyText(t, COPIED); });
     if (resetBtn) {
       resetBtn.addEventListener('click', function () {
         idle(CAP_RESET);
@@ -3408,9 +3666,25 @@ html header.site-header .nav-pill{font-size:12px}
 
   /* ================= Spoiler lock: seen once the #one-more-thing headline is half on screen,
      or the page is scrolled past it, or the motion layer fires fs:one-more-thing ================= */
+  // Unlocked copy for the 3 spoiler spots. The locked text stays in the static HTML, so no-JS readers keep it.
+  var SPOILERS = {
+    'spec-lumber': '2x4s, halved. Easily.',
+    'compare-2x4': 'Halved. Easily.',
+    'faq-lumber': 'Yes. Cut your 2x4s in half first. They easily fit, and you end up with twice as many 2x4s.'
+  };
   function markRevealed(animate) {
     root.setAttribute('data-reveal', 'seen');
-    $$('[data-spoiler]').forEach(function (el) { el.setAttribute('data-unlocked', ''); });
+    // A line unlocked during this visit gets a marker swipe the first time it is on screen (motion only).
+    var glow = animate && motionOK() && 'IntersectionObserver' in win ? new IntersectionObserver(function (entries, obs) {
+      entries.forEach(function (en) { if (en.isIntersecting) { obs.unobserve(en.target); restart(en.target, 'is-unlocked'); } });
+    }, { threshold: 0.5 }) : null;
+    $$('[data-spoiler]').forEach(function (el) {
+      el.setAttribute('data-unlocked', '');
+      var text = SPOILERS[el.getAttribute('data-spoiler')];
+      if (!text || el.textContent === text) return;
+      el.textContent = text;
+      if (glow) glow.observe(el);
+    });
     if (widget) widget.reveal(animate);
   }
   function unlock() {
