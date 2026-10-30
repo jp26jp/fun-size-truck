@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Truck, Actual Size</title>
+<title>Truck, Actual Size (parody)</title>
 <meta name="description" content="An unofficial keynote for the Slate Truck: the first pickup you can pick up, shown actual size. A parody made in a group chat. Not affiliated with Slate Auto.">
+<meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&amp;family=Instrument+Serif:ital@1&amp;family=Inter+Tight:wght@800&amp;family=Inter:wght@400;500&amp;display=swap">
@@ -489,6 +490,8 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
 
 /* hero zoom gag: while the X balloons under the caption lines, they sit on stage-black pills */
 .hero.is-zoomed .hero-caption,.hero.is-zoomed .hero-under{left:50%;right:auto;width:max-content;max-width:calc(100% - 32px);padding:4px 14px;border-radius:14px;background:var(--stage);transform:translateX(-50%)}
+/* a caption that wraps (phones) grows upward over the X instead of down into the line under it */
+.hero.is-zoomed .hero-caption{top:auto;bottom:calc(50% - 289px)}
 
 /* fun size. UI layer (app-ui.js): phone menu, Reserve toast, FAQ, and the Will it fit? states.
    Colors come from art.css tokens only. Every animation sits under prefers-reduced-motion: no-preference;
@@ -555,6 +558,126 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
 @keyframes fs-flip{from{opacity:.2;transform:perspective(240px) rotateX(90deg)}to{opacity:1;transform:none}}
 @keyframes fs-faq-open{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 
+/* style-x-a11y.css: accessibility lane for "fun size." Contrast, text-size floors and visually hidden captions.
+   Fixes only: palette tokens from art/art.css, no animation rules. Checked by test-a11y-audit.js.
+   Other style-x-* files sort after this one, so overrides of their rules carry a leading "html" / "html body". */
+
+/* Visually hidden, still read by screen readers (the compare and spec table captions). */
+.a11y-sr{position:absolute!important;width:1px!important;height:1px!important;margin:-1px!important;padding:0!important;
+  border:0!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;clip-path:inset(50%)!important;white-space:nowrap!important}
+
+/* (No scroll-padding here: the section anchors already carry a scroll-margin that clears the sticky header;
+   test-a11y-audit.js checks focus never lands under it.) */
+
+/* Sticky header: at .82 alpha the black stage sections show through enough that the muted "Unofficial parody"
+   pill drops to about 4.3:1 while scrolling past them. At .94 it stays above 5:1 over every section. */
+html .site-header{background:rgba(250,250,247,.94)}
+
+/* Small print never below 12px (it was 11px). On phones, no tracking and 6px sides keep the pill at 137px
+   (it was 138px at 11px), so brand, pill and Menu stay on one 56px row at 360-390px. */
+html header.site-header .nav-pill{font-size:12px}
+@media (max-width:400px){html header.site-header .nav-pill{letter-spacing:0;padding:6px 6px}}
+
+/* The family seat map's "NO" stamp sat right on the drawing's strokes (about 1.7:1 where they cross).
+   A card-colored backing keeps the stamp look and keeps the red at 3.4:1 (large bold text). */
+#family .art-labels li.stamp{background:var(--card)}
+
+@media (max-width:700px){
+  /* small print floor on phones: compare captions (11px), round stickers (10px) */
+  html .compare-table .compare-cap{font-size:12px}
+  html .art-labels li.sticker{--size:96px;font-size:12px;letter-spacing:.02em;padding:7px;line-height:1.1}
+}
+@media (max-width:369px){
+  /* favor lineup chips were 11px at 360px; 12px still fits three on a row with 1px less side padding */
+  html body #favor-protection .art-labels li:not(.plain){font-size:12px;padding:4px 5px}
+}
+
+/* copy lane: the parody notice above the sticky header.
+   It sits in normal flow above .site-header, so it scrolls away and the header
+   still sticks at top:0 (no shift). Fixed line-height keeps its height steady
+   while fonts load. Tokens only: --paper, --ink-muted, --hair, --font-mono. */
+.parody-line{
+  margin:0;
+  padding:6px 16px;
+  min-height:29px;
+  background:var(--paper);
+  border-bottom:1px solid var(--hair);
+  color:var(--ink-muted);
+  font-family:var(--font-mono);
+  font-weight:500;
+  font-size:12px;
+  line-height:16px;
+  letter-spacing:.04em;
+  text-align:center;
+}
+.parody-line p{margin:0;text-wrap:balance}
+/* keep it to one line on 320px phones too */
+@media (max-width:340px){.parody-line{letter-spacing:0}}
+
+/* style-x-r1.css: layout polish (lane r1), scoped to the header, #hero, #super-cute, #hobbitville,
+   #fence-mode, #favor-protection and #seats-four. Loads after every other stylesheet.
+   Colors only through the palette tokens in art/art.css. No animation rules here. */
+
+/* ---------- header ---------- */
+/* brand, parody pill and Menu stay on one row on 360-390px phones (they wrapped to two rows below ~385px) */
+@media (max-width:400px){
+  header.site-header .nav-bar{column-gap:12px}
+  header.site-header .nav-pill{letter-spacing:.04em;padding:6px 8px}
+}
+@media (max-width:350px){
+  header.site-header .nav-pill{white-space:normal;max-width:96px;padding:4px 8px;border-radius:12px;line-height:1.15;text-align:center}
+}
+
+/* ---------- hero ---------- */
+/* the first screen holds the whole stage: subtract the parody line (and the header's 1px rule) too, so the
+   "[reverent silence]" cue is no longer cut by the fold (the stage is laid out from the hero's middle) */
+#hero{min-height:max(calc(100svh - var(--nav-h) - var(--parody-h,30px)),720px)}
+/* balanced eyebrow: no lone "TRUCK" on its own line at phone width */
+#hero .eyebrow{text-wrap:balance}
+
+/* ---------- super cute ---------- */
+/* the drawing's top band already carries its labels, so the figure can sit closer to the copy */
+@media (min-width:701px){#super-cute .fig{margin-top:clamp(16px,2vw,28px)}}
+/* room under the "p" descender of the giant title */
+#super-cute .h-big + .lede{margin-top:clamp(28px,2.8vw,40px)}
+
+/* ---------- hobbitville ---------- */
+/* "fun-size" never splits at its hyphen across lines */
+#hobbitville .nowrap{white-space:nowrap}
+
+/* ---------- fence mode ---------- */
+/* the long quote keeps a readable centered measure (about 65 characters a line) */
+#fence-mode .lede--wide{max-width:31em}
+
+/* ---------- favor protection ---------- */
+/* the lede's first line lines up with the top of the chart panel beside it */
+#favor-protection .split-a > .lede:first-child{margin-top:0}
+#favor-protection .chart-title{text-wrap:balance}
+
+/* ---------- phones ---------- */
+@media (max-width:700px){
+  /* centered sections: the label chip row centers under its drawing, like the copy around it */
+  #super-cute .art-labels,#hobbitville .art-labels,#fence-mode .art-labels,#seats-four .art-labels{justify-content:center}
+
+  /* hobbitville: the plain "Your garage" label joins the chip row as a chip */
+  #hobbitville .art-labels li.plain{background:var(--paper);border:2px solid var(--ink);padding:5px 11px}
+
+  /* favor protection: head sits closer to its copy */
+  #favor-protection .section-head{margin-bottom:28px}
+
+  /* the lineup: three size chips on one row, then the two texts as a chat thread
+     (they float over the drawn phone on desktop, which is too small to hold them here) */
+  #favor-protection .art-labels{display:grid;grid-template-columns:repeat(3,auto);justify-content:center;gap:10px 6px}
+  #favor-protection .art-labels li:not(.plain){font-size:12px;padding:4px 8px}
+  #favor-protection .art-labels li.plain{grid-column:1 / span 2;justify-self:start;margin-top:6px;padding:10px 14px;
+    border:2px solid var(--ink);border-radius:18px 18px 18px 6px;background:var(--chrome);font-size:13px;line-height:1.35;text-align:left}
+  #favor-protection .art-labels li.plain ~ li.plain{grid-column:2 / span 2;justify-self:end;margin-top:0;
+    border-color:var(--encore-blue);border-radius:18px 18px 6px 18px;background:var(--white)}
+}
+@media (max-width:369px){
+  #favor-protection .art-labels li:not(.plain){font-size:11px;padding:4px 6px}
+}
+
 /* layout lane r2: family, airport, will-it-fit, compare, specs, testimonials. Loads after every other sheet. */
 
 /* ---------- family ---------- */
@@ -574,12 +697,22 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
 /* ---------- compare ---------- */
 /* top-align the header tiles: a two-line caption no longer lifts "A big truck" above the other two */
 #compare .compare-table thead th{vertical-align:top}
+/* no one-word last lines ("print.", "couch") in cells or in the phone card titles */
+#compare .compare-table td,#compare .compare-table tbody th{text-wrap:balance}
+/* the white "This truck" column reads as one raised card: round its top */
+#compare .compare-table thead .is-us{border-radius:16px 16px 0 0}
 
 /* ---------- specs ---------- */
+#specs .spec-table td{text-wrap:pretty}
 @media (min-width:701px){
+  /* spec rows share the blueprint's 1120 column instead of sitting 80px inside it */
+  #specs .spec-wrap{max-width:1120px}
+  #specs .spec-table th{width:30%}
   /* callout bottom meets its leader line; HEIGHT label moves below where that line crosses */
   #specs .blueprint-art .bp-callout{--y:19.5% !important}
   #specs .blueprint-art .bp-height{--y:61% !important}
+  /* multi-line labels: a soft rectangle, so the first letter no longer touches the pill's curve */
+  #specs .blueprint-art .bp-callout,#specs .blueprint-art .bp-height{border-radius:16px;padding:7px 12px}
 }
 @media (max-width:700px){
   /* phone: the labels read as a tidy legend under the drawing instead of a ragged chip row */
@@ -588,11 +721,52 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
   #specs .blueprint-art .art-labels li.plain{border:2px solid var(--chalk);padding:5px 11px;background:var(--stage)}
 }
 
+/* Layout lane r3: faq, thank-you, one-more-thing, no-room, final-cta, footnotes, footer.
+   Layout polish only; animation CSS and the will-it-fit widget live elsewhere. */
+
+/* ---------- FAQ: even question wraps, no one-word orphans on phones ---------- */
+#faq .faq-q{text-wrap:balance}
+
+/* ---------- Thank you + final CTA: ledes break between sentences, never mid-phrase ---------- */
+#thank-you .lede{text-wrap:balance}
+#one-more-thing .body-copy{text-wrap:balance}
+@media (min-width:360px){#thank-you .lede .nowrap,#final-cta .lede .nowrap,#one-more-thing .body-copy .nowrap{white-space:nowrap}}
+
+/* ---------- One more thing ---------- */
+/* Desktop sticker: 72px was too small for "ENLARGED", so its last letter ran off the white disc. */
+@media (min-width:701px){
+  #one-more-thing .art-labels li.sticker{width:90px;padding:10px;font-size:11px;line-height:1.15}
+}
+/* Phones: each chip row hugs its own frame instead of floating next to the frame below it. */
+@media (max-width:700px){
+  #one-more-thing .art-frames{gap:44px}
+  #one-more-thing .art-frame > .art-labels{margin-top:-20px}
+}
+
+/* ---------- No room: the stage floor sits on the section's bottom edge at every height ---------- */
+#no-room > .wrap{margin-block:auto}
+
+/* ---------- Final CTA: even lede lines, a little more air under the big line ---------- */
+#final-cta .lede{text-wrap:balance}
+#final-cta .h-cta + .lede{margin-top:clamp(24px,2.6vw,36px)}
+#final-cta .fine{text-wrap:balance}
+#one-more-thing .fine{text-wrap:pretty}
+
+/* ---------- Footnotes: an appendix, so tighter padding; numbers align with the heading ---------- */
+#footnotes{padding:clamp(56px,6.5vw,96px) 0 clamp(40px,4.5vw,64px)}
+#footnotes .footnote-list{list-style:none;padding-left:0;counter-reset:fn}
+#footnotes .footnote-list li{display:grid;grid-template-columns:2em minmax(0,1fr);text-wrap:pretty;padding-left:0;counter-increment:fn;scroll-margin-top:calc(var(--nav-h) + 24px)}
+#footnotes .footnote-list li::before{content:counter(fn) "."}
+#footnotes .footnote-list li:target{color:var(--ink)}
+
+/* ---------- Footer: same column as the footnotes above it ---------- */
+.site-footer .wrap{--max:880px}
+.site-footer .shop .mono-small{white-space:nowrap}
+
 </style>
-<meta name="robots" content="noindex">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://jp26jp.github.io/fun-size-truck/">
-<meta property="og:title" content="Truck, Actual Size">
+<meta property="og:title" content="Truck, Actual Size (parody)">
 <meta property="og:description" content="An unofficial keynote for the Slate Truck: the first pickup you can pick up, shown actual size. A parody made in a group chat. Not affiliated with Slate Auto.">
 <meta property="og:image" content="https://jp26jp.github.io/fun-size-truck/og.png">
 <meta property="og:image:width" content="1200">
@@ -847,6 +1021,7 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
     <circle class="f-wood" cx="118.6" cy="23.3" r="0.7"/>
   </symbol>
 </svg>
+<aside class="parody-line" aria-label="Parody notice"><p>Parody. Not affiliated with Slate Auto.</p></aside>
 <header class="site-header" id="top" data-nav>
   <div class="nav-bar">
     <a class="brand" href="#top">fun size.<svg class="brand-glyph" viewBox="0 0 24 14" width="10" height="6" aria-hidden="true" focusable="false"><use href="#truck-glyph"/></svg></a>
@@ -878,11 +1053,12 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
     <g class="stage-screen">
       <rect class="f-chalk" x="930" y="6" width="1340" height="574" rx="60" opacity=".02"/>
       <rect class="f-chalk" x="960" y="22" width="1280" height="540" rx="40" opacity=".025"/>
-      <rect class="f-stage2 ol s-muted thin" x="990" y="40" width="1220" height="500" rx="20"/>
-      <rect class="f-chalk" x="1010" y="60" width="1180" height="460" rx="12" opacity=".035"/>
+      <rect class="f-stage2" x="990" y="40" width="1220" height="500" rx="20"/>
+      <rect class="f-chalk" x="1010" y="60" width="1180" height="460" rx="12" opacity=".05"/>
     </g>
+    <!-- screen and floor edges are tone steps, not hairlines: the zoom is anchored on the truck, so at 4x any
+         crisp line between y 522 and 622 lands across the headline -->
     <rect class="f-stage2" y="560" width="3200" height="280"/>
-    <line class="ln s-muted thin" x1="0" y1="560" x2="3200" y2="560"/>
     <g data-anim="spotlight">
       <polygon class="f-light" points="1570,0 1630,0 1790,655 1410,655" opacity=".05"/>
       <polygon class="f-light" points="1585,0 1615,0 1700,655 1500,655" opacity=".05"/>
@@ -933,6 +1109,8 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
 <path class="f-yellow ol thin" d="M1052 376Q1054 390 1068 392Q1054 394 1052 408Q1050 394 1036 392Q1050 390 1052 376Z"/>
 <path class="f-yellow ol thin" d="M1090 418Q1091.5 428 1100 429Q1091.5 430 1090 440Q1088.5 430 1080 429Q1088.5 428 1090 418Z"/>
 
+<!-- the cargo sits IN the bed: lowered 12 so the near bed rail (redrawn over it below) hides each bottom edge -->
+<g transform="translate(0 12)">
 <!-- item 1: toaster (chrome, toast up) -->
 <g data-anim="item-1">
   <path class="f-wood-light ol" d="M402 382V362Q402 352 412 352Q418 347 424 352Q434 352 434 362V382Z"/>
@@ -965,18 +1143,21 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
 <g data-anim="item-4">
   <use href="#truck" x="464" y="342.75" width="130" height="81.25" style="--line-w:1.5px"/>
 </g>
+</g>
+<!-- the near bed rail (the truck symbol's own rail, k = 3.25), drawn again in front of the cargo -->
+<rect class="f-body ol" x="271.25" y="422.38" width="323.7" height="17.88" rx="8.94"/>
 
 <!-- leaders (hidden on phones) -->
-<g class="art-leader"><path class="ln thin" d="M155 383H298"/><circle class="f-ink" cx="300" cy="383" r="4"/></g>
-<g class="art-leader"><path class="ln thin" d="M240 280L314 306"/><circle class="f-ink" cx="316" cy="307" r="4"/></g>
-<g class="art-leader"><path class="ln thin" d="M420 245V349"/><circle class="f-ink" cx="420" cy="351" r="4"/></g>
-<g class="art-leader"><path class="ln thin" d="M600 180L548 346"/><circle class="f-ink" cx="547.5" cy="348" r="4"/></g>
+<g class="art-leader"><path class="ln thin" d="M155 395H298"/><circle class="f-ink" cx="300" cy="395" r="4"/></g>
+<g class="art-leader"><path class="ln thin" d="M240 280L314 318"/><circle class="f-ink" cx="316" cy="319" r="4"/></g>
+<g class="art-leader"><path class="ln thin" d="M420 245V361"/><circle class="f-ink" cx="420" cy="363" r="4"/></g>
+<g class="art-leader"><path class="ln thin" d="M600 180L548 358"/><circle class="f-ink" cx="547.5" cy="360" r="4"/></g>
 </svg><ol class="art-labels">
   <li style="--x:32.41%;--y:25.69%">Toaster</li>
   <li style="--x:15.74%;--y:30.56%">Succulent</li>
-  <li style="--x:7.87%;--y:44.86%">Shoebox</li>
+  <li style="--x:7.87%;--y:46.53%">Shoebox</li>
   <li style="--x:49.07%;--y:16.67%">Smaller truck (toy)</li>
-  <li class="sticker" style="--x:90.74%;--y:15.97%;--px:87.96%;--py:13.4%">Enlarged 900% to show texture.</li>
+  <li class="sticker" style="--x:90.74%;--y:15.97%;--px:14%;--py:15%">Enlarged 900% to show texture.</li>
 </ol></figure>
       <figcaption class="fig-caption">Other small things, shown for scale.</figcaption>
     </figure>
@@ -989,7 +1170,7 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
     <p class="eyebrow">Where it all started</p>
     <h2 id="hobbitville-title" class="h-mega h-mega--long">Hobbitville.</h2>
     <div class="anecdote">
-      <p class="serif">There used to be a place called Hobbitville by my house. (Garrett's been.) They had all of these creepy houses because they were all fun size. But this car* could have easily fit in their fun-size garage.</p>
+      <p class="serif">There used to be a place called Hobbitville by my house. (Garrett's been.) They had all of these creepy houses because they were all fun size. But this car* could have easily fit in their <span class="nowrap">fun-size</span> garage.</p>
       <p class="footnote-inline">*Truck.</p>
     </div>
     <p class="body-copy">Most people saw creepy little houses. A few of us saw a parking spot.</p>
@@ -1032,11 +1213,12 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
 <path class="ln thin s-wood" d="M292 624V668M270 646H314"/>
 </g>
 
-<!-- the fun-size garage -->
+<!-- the fun-size garage: cottage scale, so the whole building (roof and all) fits inside your garage's door outline -->
+<g transform="translate(690 790) scale(.8) translate(-690 -790)">
 <path class="f-cloth4 ol" d="M472 790L476 510Q690 496 904 506L908 790Z"/>
 <path class="f-muted ol" d="M502 790V604A188 64 0 0 1 878 604V790Z"/>
-<ellipse class="shadow" cx="690" cy="790" rx="138" ry="6"/>
-<use href="#truck" x="540" y="602.5" width="300" height="187.5"/>
+<ellipse class="shadow" cx="690" cy="790" rx="126" ry="6"/>
+<use href="#truck" x="550" y="615" width="280" height="175"/>
 <!-- round-topped door, rolled up -->
 <path class="f-door ol" d="M502 604A188 64 0 0 1 878 604V628A188 64 0 0 0 502 628Z"/>
 <path class="ln thin" d="M502 616A188 64 0 0 1 878 616"/>
@@ -1045,16 +1227,17 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
 <ellipse class="f-grass-dark" cx="676" cy="446" rx="18" ry="6"/>
 <ellipse class="f-grass-dark" cx="830" cy="480" rx="15" ry="5"/>
 <ellipse class="f-grass-dark" cx="610" cy="506" rx="12" ry="4"/>
+</g>
 
-<!-- tape measure, extended to fun size -->
-<rect class="f-yellow ol" x="1076" y="430" width="18" height="300"/>
-<path class="ln thin" d="M1076 450h7M1076 470h7M1076 490h12M1076 510h7M1076 530h7M1076 550h12M1076 570h7M1076 590h7M1076 610h12M1076 630h7M1076 650h7M1076 670h12M1076 690h7"/>
-<rect class="f-chrome ol" x="1070" y="422" width="30" height="10" rx="2"/>
+<!-- tape measure, extended to fun size: exactly the fun-size garage's height -->
+<rect class="f-yellow ol" x="1076" y="486" width="18" height="244"/>
+<path class="ln thin" d="M1076 506h7M1076 526h7M1076 546h12M1076 566h7M1076 586h7M1076 606h12M1076 626h7M1076 646h7M1076 666h12M1076 686h7M1076 706h7"/>
+<rect class="f-chrome ol" x="1070" y="478" width="30" height="10" rx="2"/>
 <rect class="f-yellow ol" x="1048" y="716" width="76" height="74" rx="18"/>
 <circle class="f-ink" cx="1086" cy="753" r="14"/>
 <circle class="f-chrome" cx="1086" cy="753" r="5"/>
 </svg><ol class="art-labels">
-  <li style="--x:90.42%;--y:44.89%">fun size</li>
+  <li style="--x:90.42%;--y:51.11%">fun size</li>
   <li class="plain" style="--x:57.5%;--y:27.22%">Your garage (for reference)</li>
   <li class="sticker" style="--x:15.83%;--y:23.33%;--px:13.5%;--py:16.5%">Fun-size garage compatible†</li>
 </ol></figure>
@@ -1083,6 +1266,8 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
 <!-- the route. The truck rides it by its ground-center: from the grass behind the near mound,
      up to the apex (700,471.33) where it is drawn, over the fence, straight down behind the far mound -->
 <path data-anim="arc" class="ln dots" style="--line-w:4px" d="M420 760C430 560 560 471.33 700 471.33C1050 471.33 1190 471.33 1190 760"/>
+<!-- arrowhead at the landing, so the direction reads without the step labels (they move below on phones) -->
+<path class="f-ink ol" d="M1189.6 703L1173.4 677.6L1200.2 674.8Z"/>
 
 <!-- white picket fence (no gate) -->
 <rect class="f-asphalt ol" x="776" y="626" width="214" height="16" rx="3"/>
@@ -1100,7 +1285,11 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
 <!-- the truck, overhead at the top of the arc; palms under the chassis -->
 <g data-anim="truck">
   <use href="#truck" x="500" y="221.33" width="400" height="250"/>
-  <path class="f-dirt ol" d="M520 325C522 306 535 292 550 286C554 268 570 255 586 255C592 237 614 228 630 238C647 247 656 262 656 276C666 287 672 305 672 325Z"/>
+  <!-- heaped well past the cab roof: a very optimistic load -->
+  <path class="f-dirt ol" d="M512 325C506 300 518 278 538 272C536 246 552 228 572 226C576 198 598 182 620 186C644 190 658 210 654 232C666 246 672 272 670 296L672 325Z"/>
+  <circle class="f-dirt-dark" cx="598" cy="208" r="5"/>
+  <circle class="f-dirt-dark" cx="566" cy="248" r="5.5"/>
+  <circle class="f-dirt-dark" cx="634" cy="228" r="5"/>
   <circle class="f-dirt-dark" cx="560" cy="304" r="6"/>
   <circle class="f-dirt-dark" cx="583" cy="277" r="5"/>
   <circle class="f-dirt-dark" cx="614" cy="256" r="5"/>
@@ -1110,6 +1299,9 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
   <circle class="f-dirt-dark ol thin" cx="530" cy="320" r="5"/>
   <circle class="f-dirt-dark ol thin" cx="664" cy="321" r="4"/>
   <circle class="f-dirt ol thin" cx="509" cy="317" r="5.5"/>
+  <!-- a little spills off the tailgate on the way up -->
+  <circle class="f-dirt ol thin" cx="497" cy="342" r="5.5"/>
+  <circle class="f-dirt-dark ol thin" cx="489" cy="366" r="4"/>
 </g>
 
 <!-- near side: the dirt, with a shovel stuck in it (drawn over the truck so it parks behind the pile) -->
@@ -1135,7 +1327,7 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
 </svg><ol class="art-labels">
   <li style="--x:17.5%;--y:64.44%">1. Load dirt.</li>
   <li style="--x:15.5%;--y:42.22%">2. Do not look for a gate.</li>
-  <li style="--x:43.75%;--y:19.44%">3. Lift with your legs.</li>
+  <li style="--x:43.75%;--y:14.44%">3. Lift with your legs.</li>
   <li style="--x:78.13%;--y:52.22%">4. Set it down.</li>
   <li data-anim="flag-label" style="--x:92.4%;--y:63%">Delivered.</li>
 </ol></figure>
@@ -1193,21 +1385,22 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
 <!-- studio: seamless backdrop and floor -->
 <rect class="f-card" x="30" y="56" width="1110" height="788" rx="40"/>
 <path class="f-asphalt" d="M30,600 H1140 V804 A40,40 0 0 1 1100,844 H70 A40,40 0 0 1 30,804 Z"/>
-<!-- the lineup, all at the kit's same scale (s = 1.06), ground y = 690 -->
-<ellipse class="shadow" cx="234.8" cy="690" rx="140" ry="8.5"/>
-<ellipse class="shadow" cx="606.2" cy="690" rx="150" ry="8.5"/>
-<ellipse class="shadow" cx="956.4" cy="690" rx="116" ry="6"/>
-<use href="#table" x="86.4" y="531" width="296.8" height="159"/>
-<use href="#couch" x="447.2" y="531" width="318" height="159"/>
-<use href="#truck" x="829.2" y="531" width="254.4" height="159" style="--line-w:2px"/>
+<!-- the lineup, ground y = 690: the table and the couch at s = 1.25, the truck at s = 0.72,
+     so the truck is plainly the smallest thing in the row (lower than the couch back, under half its length) -->
+<ellipse class="shadow" cx="255" cy="690" rx="165" ry="9.5"/>
+<ellipse class="shadow" cx="661.5" cy="690" rx="177" ry="9.5"/>
+<ellipse class="shadow" cx="1005.4" cy="690" rx="79" ry="4.5"/>
+<use href="#table" x="80" y="502.5" width="350" height="187.5"/>
+<use href="#couch" x="474" y="502.5" width="375" height="187.5"/>
+<use href="#truck" x="919" y="582" width="172.8" height="108" style="--line-w:2px"/>
 <!-- leaders start under each pill's center (hidden by the pill at every size) and end on the object -->
 <g class="art-leader">
-  <path class="ln thin" d="M234.8,450 V551"/>
-  <circle class="f-ink" cx="234.8" cy="554" r="4.5"/>
-  <path class="ln thin" d="M606.2,450 V542"/>
-  <circle class="f-ink" cx="606.2" cy="545" r="4.5"/>
-  <path class="ln thin" d="M975,450 V540"/>
-  <circle class="f-ink" cx="975" cy="543" r="4.5"/>
+  <path class="ln thin" d="M255,450 V526.6"/>
+  <circle class="f-ink" cx="255" cy="529.6" r="4.5"/>
+  <path class="ln thin" d="M661.5,450 V516"/>
+  <circle class="f-ink" cx="661.5" cy="519" r="4.5"/>
+  <path class="ln thin" d="M1018,450 V587"/>
+  <circle class="f-ink" cx="1018" cy="590" r="4.5"/>
 </g>
 <!-- the phone (plain, unbranded); bubbles are sized so the 14px label text fits from a 640px-wide figure up -->
 <g>
@@ -1226,9 +1419,9 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
   <rect class="f-ink" x="1331" y="806" width="80" height="8" rx="4"/>
 </g>
 </svg><ol class="art-labels">
-  <li style="--x:14.68%;--y:50%;align-self:flex-start">Table: bigger</li>
-  <li style="--x:37.89%;--y:50%;align-self:flex-start">Couch: bigger</li>
-  <li style="--x:60.94%;--y:50%;align-self:flex-start">Truck: yours</li>
+  <li style="--x:15.94%;--y:50%;align-self:flex-start">Table: bigger</li>
+  <li style="--x:41.34%;--y:50%;align-self:flex-start">Couch: bigger</li>
+  <li style="--x:63.63%;--y:50%;align-self:flex-start">Truck: yours</li>
   <li class="plain" style="--x:85.13%;--y:40.22%">hey can I<br>borrow your<br>truck sat?<br>need to grab<br>a couch</li>
   <li class="plain" style="--x:86.94%;--y:65.56%">the couch is<br>bigger than<br>my truck</li>
 </ol></figure>
@@ -1253,18 +1446,18 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
     <p class="body-copy">Dinner for four. Delivered in installments.</p>
     <p class="footnote-inline">*Table chairs. In the bed.</p>
     <figure class="fig fig--wide">
-      <figure class="art" data-art="two-truck-dining"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img">
-<title>Two trips: first, four dining chairs stacked in the little truck's bed tower over its cab; second, a big rented box truck carries the table while the little truck parks beside it with its headlight on, supervising.</title>
+      <figure class="art" data-art="two-truck-dining"><!-- two frames (side by side on desktop, stacked on phones); each svg keeps the old 1600 x 900 coordinates through its viewBox -->
+<div class="art-frames" style="--frames:2">
+<div class="art-frame">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="40 56 740 788" role="img">
+<title>Trip 1: four dining chairs, two upright and two upside down, stacked in the little truck's bed and towering over its cab.</title>
 <defs>
-  <!-- chairs stand on the hidden bed floor; this hides everything below the near rail top -->
-  <clipPath id="two-truck-dining-bed"><rect x="40" y="0" width="740" height="534.3"/></clipPath>
+  <!-- chairs stand on the hidden bed floor; this hides everything below the near rail top (and above the panel) -->
+  <clipPath id="two-truck-dining-bed"><rect x="40" y="56" width="740" height="478.3"/></clipPath>
 </defs>
 <!-- panel 1: trip 1 -->
 <rect class="f-sky" x="40" y="56" width="740" height="788" rx="36"/>
 <path class="f-asphalt" d="M40,760 H780 V808 A36,36 0 0 1 744,844 H76 A36,36 0 0 1 40,808 Z"/>
-<!-- panel 2: trip 2 -->
-<rect class="f-sky" x="820" y="56" width="740" height="788" rx="36"/>
-<path class="f-asphalt" d="M820,760 H1560 V808 A36,36 0 0 1 1524,844 H856 A36,36 0 0 1 820,808 Z"/>
 
 <!-- TRIP 1: the truck, enlarged (k = 2.55), with 4 chairs stacked in the bed -->
 <g transform="translate(104 377.5) scale(2.55)">
@@ -1272,15 +1465,30 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
   <use href="#truck" width="240" height="150"/>
 </g>
 <g clip-path="url(#two-truck-dining-bed)">
-  <g data-anim="chair-1"><g transform="translate(104 377.5) scale(2.55)"><use href="#chair" x="10" y="-66" width="90" height="150"/></g></g>
-  <g data-anim="chair-2"><g transform="translate(104 377.5) scale(2.55)"><use href="#chair" x="13" y="-82" width="90" height="150"/></g></g>
-  <g data-anim="chair-3"><g transform="translate(104 377.5) scale(2.55)"><use href="#chair" width="90" height="150" transform="translate(13 -76) rotate(180 45 75)"/></g></g>
-  <g data-anim="chair-4"><g transform="translate(104 377.5) scale(2.55)"><use href="#chair" width="90" height="150" transform="translate(16 -92) rotate(180 45 75)"/></g></g>
+  <!-- chairs at 0.85 of the kit chair. Two upright, nested, backs against the tailgate (bed floor y = 84);
+       two upside down, darker wood, seat on seat and shifted toward the cab, so the upright backs stand clear of
+       the upturned legs and the flipped backs hang down just behind the cab -->
+  <g data-anim="chair-1"><g transform="translate(104 377.5) scale(2.55)"><use href="#chair" x="8" y="-43.5" width="76.5" height="127.5"/></g></g>
+  <g data-anim="chair-2"><g transform="translate(104 377.5) scale(2.55)"><use href="#chair" x="10" y="-53.5" width="76.5" height="127.5"/></g></g>
+  <g data-anim="chair-3"><g transform="translate(104 377.5) scale(2.55)"><use href="#chair" width="76.5" height="127.5" transform="translate(29 -48.4) rotate(180 38.25 63.75)" style="--wood:var(--wood-dark)"/></g></g>
+  <g data-anim="chair-4"><g transform="translate(104 377.5) scale(2.55)"><use href="#chair" width="76.5" height="127.5" transform="translate(31 -58.4) rotate(180 38.25 63.75)" style="--wood:var(--wood-dark)"/></g></g>
 </g>
 <g>
   <circle class="f-green ol" cx="112" cy="130" r="36"/>
   <path class="ln s-chalk thick" d="M95,131 L107.5,143.5 L130,118.3"/>
 </g>
+</svg>
+<ol class="art-labels">
+  <li class="sticker" style="--x:74.4%;--y:24.6%;--size:clamp(84px,7vw,100px);--px:74%;--py:22%">Enlarged to show chairs.</li>
+  <li style="--x:50%;--y:94.8%">Trip 1 · This truck · 4 chairs</li>
+</ol>
+</div>
+<div class="art-frame">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="820 56 740 788" role="img">
+<title>Trip 2: a big plain rented box truck carries the table while the little truck parks beside it with its headlight on, supervising.</title>
+<!-- panel 2: trip 2 -->
+<rect class="f-sky" x="820" y="56" width="740" height="788" rx="36"/>
+<path class="f-asphalt" d="M820,760 H1560 V808 A36,36 0 0 1 1524,844 H856 A36,36 0 0 1 820,808 Z"/>
 
 <!-- TRIP 2: the little truck (same scale as the table, m = 0.58), headlight on -->
 <ellipse class="shadow" cx="939.6" cy="760" rx="64" ry="4"/>
@@ -1321,12 +1529,13 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
   <circle class="f-green ol" cx="892" cy="130" r="36"/>
   <path class="ln s-chalk thick" d="M875,131 L887.5,143.5 L910,118.3"/>
 </g>
-</svg><ol class="art-labels">
-  <li class="sticker" style="--x:36.9%;--y:27.8%;--size:72px;--px:35.8%;--py:16.3%">Enlarged to show chairs.</li>
-  <li class="sticker" style="--x:66%;--y:26%;--size:72px;--px:79.6%;--py:20.5%">Two-Truck Solution</li>
-  <li style="--x:25.6%;--y:89.2%">Trip 1 · This truck · 4 chairs</li>
-  <li style="--x:74.4%;--y:89.2%">Trip 2 · A rented truck · 1 table</li>
-</ol></figure>
+</svg>
+<ol class="art-labels">
+  <li class="sticker" style="--x:31.9%;--y:22.6%;--size:clamp(84px,7vw,100px);--px:31.9%;--py:22%">Two-Truck Solution</li>
+  <li style="--x:50%;--y:94.8%">Trip 2 · A rented truck · 1 table</li>
+</ol>
+</div>
+</div><!-- two-truck-dining is a two-frame drawing: its labels live inside art/two-truck-dining.svg, one ol.art-labels per frame. --></figure>
     </figure>
     <p class="cue">[polite applause]</p>
   </div>
@@ -1348,13 +1557,13 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
       </div>
       <div class="split-b col-7">
         <figure class="fig fig--flush">
-          <figure class="art" data-art="family-seat-map"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" role="img">
-  <title>An airline-style seat chart of the tiny truck seen from above: You and Kid #1 fill its only two seats, the bed is stamped NO and holds just a dirt mound and a chair, and Kid #2 waits on the curb with arms crossed.</title>
+          <figure class="art" data-art="family-seat-map"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" role="img" style="overflow:hidden">
+  <title>An airline-style seat chart of the tiny truck seen from above: You and Kid #1 fill its only two seats, the bed is stamped NO and holds just a dirt mound and a chair, and Kid #2 waits on the curb with arms crossed next to a sign.</title>
 
-  <!-- sidewalk and curb along the passenger side (top-down) -->
-  <rect class="f-card" x="748" y="-20" width="192" height="940"/>
-  <path class="ln thin" d="M748 110H940M748 290H940M748 470H940M748 650H940M748 830H940"/>
-  <path class="ln" d="M940 -20V920"/>
+  <!-- sidewalk and curb along the passenger side (top-down): concrete slabs out to the edge, so it reads as a
+       sidewalk on paper and on card sections alike (a card-colored strip vanished into the card background) -->
+  <rect class="f-asphalt" x="748" y="-20" width="472" height="940"/>
+  <path class="ln thin" d="M748 80H1220M748 260H1220M748 440H1220M748 620H1220M748 800H1220"/>
   <rect class="f-chalk ol" x="732" y="-20" width="16" height="940"/>
 
   <!-- the truck as a seat chart (truck-top units, 3x) -->
@@ -1380,7 +1589,7 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
   <use href="#dirt" x="470" y="618" width="160" height="64" style="--line-w:1.5px"/>
 
   <!-- Kid #2, on the curb, arms crossed -->
-  <g transform="translate(800 680)" style="--line-w:2px">
+  <g transform="translate(822 680)" style="--line-w:2px">
     <ellipse class="shadow" cx="0" cy="0" rx="46" ry="7"/>
     <rect class="f-muted ol" x="-19" y="-70" width="16" height="62" rx="6"/>
     <rect class="f-muted ol" x="3" y="-70" width="16" height="62" rx="6"/>
@@ -1392,23 +1601,24 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
     <rect class="f-cloth2 ol" x="-43" y="-118" width="80" height="20" rx="10"/>
     <rect class="f-cloth2 ol" x="-37" y="-106" width="80" height="20" rx="10"/>
     <circle class="f-head ol" cx="31" cy="-110" r="8"/>
+    <circle class="f-head ol" cx="-31" cy="-96" r="8"/>
     <circle class="f-head ol" cx="0" cy="-176" r="25"/>
     <path class="ln" d="M-3 -200q4 -12 14 -8"/>
   </g>
 
-  <!-- the small sign next to Kid #2 (its words are an HTML label) -->
+  <!-- the sign next to Kid #2, pointing away from the truck (its words are an HTML label, two lines) -->
   <g style="--line-w:2px">
-    <ellipse class="shadow" cx="975" cy="680" rx="22" ry="5"/>
-    <rect class="f-wood ol" x="969" y="556" width="12" height="124" rx="4"/>
-    <path class="f-white ol" d="M870 500H1088L1114 530L1088 560H870Q862 560 862 552V508Q862 500 870 500Z"/>
+    <ellipse class="shadow" cx="1009" cy="690" rx="24" ry="5"/>
+    <rect class="f-wood ol" x="1003" y="586" width="12" height="104" rx="4"/>
+    <path class="f-white ol" d="M904 470H1124L1156 530L1124 590H904Q894 590 894 580V480Q894 470 904 470Z"/>
   </g>
 </svg><ol class="art-labels">
   <li style="--x:35.83%;--y:39.56%">You</li>
   <li style="--x:48.33%;--y:39.56%">Kid #1</li>
-  <li style="--x:42.08%;--y:51.33%">Kid #2?</li>
-  <li class="stamp" data-anim="stamp" style="--x:44%;--y:0%;--px:44%;--py:0%;margin-top:45.75%">NO</li>
+  <li style="--x:42.08%;--y:52.67%">Kid #2?</li>
+  <li class="stamp" data-anim="stamp" style="--x:42.08%;--y:0%;--px:42.08%;--py:0%;margin-top:46%;font-size:clamp(22px,3vw,44px)">NO</li>
   <li style="--x:42.08%;--y:83.6%">Bed: cargo only.</li>
-  <li class="plain" style="--x:81.25%;--y:58.89%">see: Grandma</li>
+  <li class="plain" style="--x:84.08%;--y:0%;margin-top:44.17%;position:absolute;transform:translate(-50%,-50%);width:min-content;white-space:normal;text-align:center;line-height:1.15;font-size:clamp(12px,1.25vw,18px)">see: Grandma</li>
   <li class="plain" style="--x:3%;--y:95%;--tx:0%">Seats: 2. Kids: 2. Math: hard.</li>
   <li class="sticker" style="--x:14%;--y:0%;--px:13%;--py:0%;margin-top:12.75%">Enlarged to show seating.</li>
 </ol></figure>
@@ -1445,7 +1655,7 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
           </table>
         </div>
         <figure class="fig fig--flush fig--board">
-          <figure class="art" data-art="arrivals-board"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 520" class="crop-4x3" preserveAspectRatio="xMidYMid slice" role="img">
+          <figure class="art" data-art="arrivals-board"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 520" class="crop-4x3" preserveAspectRatio="xMidYMid slice" role="img" style="overflow:hidden">
   <title>While the family's flights land, the little two-seat truck naps in the driveway with z's drifting up over its cab, because airport runs are retired.</title>
 
   <!-- lawn, driveway, sidewalk -->
@@ -1492,7 +1702,8 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
   <use href="#truck" x="430" y="264.5" width="300" height="187.5"/>
   <!-- headlight off: a closed, sleepy eye -->
   <circle class="f-body" cx="710.6" cy="364.5" r="8.4"/>
-  <path class="ln" d="M703.6 362.5Q710.6 369.5 717.6 362.5"/>
+  <path class="ln" d="M700.6 361Q710.6 372 720.6 361"/>
+  <path class="ln thin" d="M703.8 367.6L701.4 372.6M710.6 369.8V375.4M717.4 367.6L719.8 372.6"/>
 
   <!-- z z z drifting up over the cab -->
   <g data-anim="zzz">
@@ -1597,6 +1808,7 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
     </div>
     <div class="compare">
 <table class="compare-table" role="table" aria-labelledby="compare-title">
+<caption class="a11y-sr">A big truck, this truck and a wheelbarrow, compared row by row.</caption>
 <thead role="rowgroup"><tr role="row"><td class="compare-corner" role="cell"></td><th scope="col" role="columnheader" class="compare-col"><span class="compare-tile"><svg class="tile-svg" viewBox="0 0 600 112" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false"><rect class="f-card" width="600" height="112"/><line class="ln s-muted thin" x1="0" y1="94" x2="600" y2="94"/><ellipse class="shadow" cx="300" cy="94" rx="50" ry="3"/><use href="#big-pickup" x="250" y="52.3" width="100" height="41.7" style="--line-w:1.25px"/></svg></span><span class="compare-name">A big truck</span><span class="compare-cap">Probably on its way to help someone move.</span></th><th scope="col" role="columnheader" class="compare-col is-us"><span class="compare-tile"><svg class="tile-svg" viewBox="0 0 600 112" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false"><rect class="f-card" width="600" height="112"/><line class="ln s-muted thin" x1="0" y1="94" x2="600" y2="94"/><g transform="translate(300 94) scale(1 .42)"><use href="#spike-x" x="-30" y="-30" width="60" height="60"/></g><ellipse class="shadow" cx="300" cy="94" rx="16" ry="2.6"/><use href="#truck-stage" x="286" y="76.5" width="28" height="17.5" style="--line-w:1.5px"/></svg></span><span class="compare-name">This truck</span><span class="compare-cap">Shown actual size.</span></th><th scope="col" role="columnheader" class="compare-col"><span class="compare-tile"><svg class="tile-svg" viewBox="0 0 600 112" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false"><rect class="f-card" width="600" height="112"/><line class="ln s-muted thin" x1="0" y1="94" x2="600" y2="94"/><ellipse class="shadow" cx="300" cy="94" rx="9" ry="1.6"/><use href="#wheelbarrow" x="292" y="84.4" width="16" height="9.6" style="--line-w:1px"/></svg></span><span class="compare-name">A wheelbarrow</span><span class="compare-cap">Also shown actual size.</span></th></tr></thead>
 <tbody role="rowgroup">
 <tr role="row"><th scope="row" role="rowheader">Lets you say “I drive a truck”</th><td role="cell" data-label="A big truck">Yes</td><td role="cell" class="is-us" data-label="This truck"><span class="cell-us"><svg class="check" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path class="ln s-green" d="M4 10.5l4 4L16 6"/></svg><span>Yes</span></span></td><td role="cell" data-label="A wheelbarrow">No</td></tr>
@@ -1660,6 +1872,7 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
     </figure>
     <div class="spec-wrap">
       <table class="spec-table" aria-labelledby="specs-title">
+        <caption class="a11y-sr">Tech specs of the Slate Truck, one per row, shown actual size.</caption>
         <tbody>
 <tr><th scope="row">Size</th><td>Actual.</td></tr>
 <tr><th scope="row">Seating</th><td>2 people. Plus 4 table chairs in the bed.</td></tr>
@@ -1671,7 +1884,7 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
 <tr><th scope="row">Curb weight</th><td>Intentionally omitted for morale reasons.</td></tr>
 <tr><th scope="row">Turning radius</th><td>Irrelevant. Pick it up and face it the other way.</td></tr>
 <tr><th scope="row">Garage compatibility</th><td>Fun size and up. Hobbitville-rated. (Garrett's been.)</td></tr>
-<tr><th scope="row">Kids</th><td>1, in the seat next to you (car-seat rules apply). Bed: 0. Always 0. <a class="spec-note" href="#family-fine-print">See the family fine print.</a></td></tr>
+<tr><th scope="row">Kids</th><td>1, in the seat next to you (car-seat rules apply). Bed:&nbsp;0. Always&nbsp;0. <a class="spec-note" href="#family-fine-print">See the family fine print.</a></td></tr>
 <tr><th scope="row">Airport runs per year</th><td>0 (party of 2+).</td></tr>
 <tr><th scope="row">Favors per year</th><td>0.</td></tr>
 <tr><th scope="row">Range</th><td>About 205 miles, claimed. None of them to the airport. <span class="spec-note">Manufacturer's estimate.</span></td></tr>
@@ -1727,7 +1940,7 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
   <div class="slide thank-slide">
     <div class="wrap center">
       <h2 id="thank-you-title" class="h-big">Thank you.</h2>
-      <p class="lede">Drive small. Park anywhere. Lift responsibly.</p>
+      <p class="lede"><span class="nowrap">Drive small.</span> <span class="nowrap">Park anywhere.</span> <span class="nowrap">Lift responsibly.</span></p>
     </div>
     <svg class="stage-strip stage-strip--dim" viewBox="0 0 2400 180" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
       <rect class="f-stage2" y="80" width="2400" height="100"/>
@@ -1751,8 +1964,8 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
     <p class="eyebrow">Oh. And one more thing.</p>
     <h2 id="one-more-thing-title" class="h-big h-gradient">It hauls 2x4s.*</h2>
     <p class="lede">*If you cut 2x4s in half, you could easily fit them in the truck.</p>
-    <p class="body-copy">Same lumber. Half the length. All of the confidence.</p>
-    <p class="body-copy">One 2x4, cut in half, is two 2x4s. You didn't lose length. You gained lumber.</p>
+    <p class="body-copy"><span class="nowrap">Same lumber.</span> <span class="nowrap">Half the length.</span> <span class="nowrap">All of the confidence.</span></p>
+    <p class="body-copy"><span class="nowrap">One 2x4, cut in half, is two 2x4s.</span> <span class="nowrap">You didn't lose length.</span> <span class="nowrap">You gained lumber.</span></p>
     <figure class="fig fig--wide">
       <figure class="art" data-art="lumber-cut"><div class="art-frames">
 <div class="art-frame">
@@ -1772,7 +1985,7 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
 </svg>
 <ol class="art-labels">
   <li class="on-stage" style="--x:34%;--y:27.5%">A 2x4: 8 ft</li>
-  <li class="sticker" style="--x:81.3%;--y:19.2%;--size:72px;--px:84.2%;--py:15.3%">Enlarged to show lumber.</li>
+  <li class="sticker" style="--x:80.5%;--y:19.5%;--size:clamp(84px,7vw,100px);--px:84.2%;--py:15.3%">Enlarged to show lumber.</li>
 </ol>
 </div>
 <div class="art-frame">
@@ -1812,7 +2025,7 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
 </g>
 <!-- half B: the back half, waiting on the stage floor behind the truck, fresh cut toward the truck -->
 <g data-anim="half-b">
-  <use href="#plank-half" x="90" y="880" width="216" height="43.2" style="--line-w:2px"/>
+  <use href="#plank-half" x="90" y="862.2" width="216" height="43.2" style="--line-w:2px"/>
 </g>
 <g data-anim="sawdust">
   <circle class="f-wood-light" cx="230" cy="430" r="11"/>
@@ -1830,9 +2043,9 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
   <circle class="f-wood-light" cx="276" cy="704" r="8"/>
   <circle class="f-wood" cx="330" cy="764" r="9"/>
   <circle class="f-wood-light" cx="214" cy="792" r="8"/>
-  <circle class="f-wood-light" cx="318" cy="914" r="9"/>
-  <circle class="f-wood" cx="338" cy="904" r="6"/>
-  <circle class="f-wood-light" cx="356" cy="920" r="8"/>
+  <circle class="f-wood-light" cx="306" cy="892" r="8"/>
+  <circle class="f-wood" cx="324" cy="895" r="5"/>
+  <circle class="f-wood-light" cx="276" cy="842" r="7"/>
 </g>
 <g data-anim="check">
   <circle class="f-green ol" cx="560" cy="522" r="44"/>
@@ -1884,8 +2097,8 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
 <section id="final-cta" class="slide on-stage final-cta" aria-labelledby="final-cta-title">
   <div class="wrap center">
     <h2 id="final-cta-title" class="h-xl h-cta">Say “I drive a truck.”</h2>
-    <p class="lede">Say it at barbecues. Say it at work. Say it to the guy with the lifted diesel.</p>
-    <p class="lede">Starting today. Never help anyone move again.</p>
+    <p class="lede"><span class="nowrap">Say it at barbecues.</span> <span class="nowrap">Say it at work.</span> Say it to the guy with the lifted diesel.</p>
+    <p class="lede"><span class="nowrap">Starting today.</span> <span class="nowrap">Never help anyone move again.</span></p>
     <div class="btn-row">
       <button type="button" class="btn btn--blue" data-toast="Nothing was reserved. This is a parody page. But the instinct is beautiful.">Reserve one</button>
       <a class="btn btn--ghost" href="#will-it-fit">Will it fit? ›</a>
@@ -2464,13 +2677,7 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
   }
 
   /* ---------- thank-you: the fake ending's tiny arrow nudges, then rests ---------- */
-  function thankYou() {
-    var arrow = qs('#thank-you [data-anim="fake-gap"] .fake-arrow');
-    if (!arrow || !motion()) return;
-    whenSeen(arrow, function () {
-      play(arrow, [{ transform: 'none' }, { transform: 'translateY(8px)', offset: 0.5 }, { transform: 'none' }], { duration: 900, delay: 400, iterations: 3, easing: 'ease-in-out', fill: 'none' });
-    }, 1);
-  }
+  /* #thank-you is the fake ending: it stays perfectly still (no scene here, on purpose). */
 
   /* ---------- reveal-on-scroll: .reveal is added only to blocks about to enter, never to visible ones ---------- */
   function reveals() {
@@ -2521,7 +2728,7 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
 
   [scrollTrack, hero, superCute, fence, function () { chart(qs('[data-anim="chart-fence"]')); },
     function () { chart(qs('[data-anim="chart-favors"]')); }, seats, family, airport, oneMoreThing,
-    noRoom, finalCta, thankYou, reveals, watchPreference].forEach(function (fn) {
+    noRoom, finalCta, reveals, watchPreference].forEach(function (fn) {
     try { fn(); } catch (e) { /* one scene failing leaves its static, final state and the others running */ }
   });
 })();
@@ -2564,17 +2771,30 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
   var toastTimer = 0, toastSeq = 0;
 
   function overlap(a, b) { return Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top)); }
-  // On phones, keep the toast clear of the widget result: bottom by default, top when that covers less of it.
+  // On phones, keep the toast clear of the widget result: bottom by default, top (under the nav) when the
+  // result sits behind the bottom spot and the top spot covers less of it. Re-checked while the page scrolls;
+  // the class only changes when the choice does, so the entrance animation is not restarted on every frame.
   function placeToast() {
-    toastEl.classList.remove('toast--top');
-    if (!phoneMQ.matches || !resultEl) return;
-    var r = resultEl.getBoundingClientRect();
-    if (!r.height || r.bottom <= 0 || r.top >= win.innerHeight) return;
-    var low = overlap(r, toastEl.getBoundingClientRect());
-    if (!low) return;
-    toastEl.classList.add('toast--top');
-    if (overlap(r, toastEl.getBoundingClientRect()) >= low) toastEl.classList.remove('toast--top');
+    var isTop = toastEl.classList.contains('toast--top');
+    var want = false;
+    if (phoneMQ.matches && resultEl && toastEl.textContent) {
+      var r = resultEl.getBoundingClientRect(), t = toastEl.getBoundingClientRect(), vh = win.innerHeight;
+      var navH = parseFloat(win.getComputedStyle(root).getPropertyValue('--nav-h')) || 56;
+      var topSpot = isTop ? t : { top: navH + 12, bottom: navH + 12 + t.height };
+      var lowSpot = isTop ? { top: vh - 16 - t.height, bottom: vh - 16 } : t;
+      if (r.height && r.bottom > 0 && r.top < vh) {
+        var low = overlap(r, lowSpot);
+        want = low > 0 && overlap(r, topSpot) < low;
+      }
+    }
+    if (want !== isTop) toastEl.classList.toggle('toast--top', want);
   }
+  var toastTick = false;
+  win.addEventListener('scroll', function () {
+    if (toastTick || !toastEl || !toastEl.textContent) return;
+    toastTick = true;
+    (win.requestAnimationFrame || setTimeout)(function () { toastTick = false; placeToast(); });
+  }, { passive: true });
   function hideToast() {
     clearTimeout(toastTimer);
     if (!toastEl) return;
@@ -3124,7 +3344,8 @@ html.js .is-empty .bar-fill[data-anim="bar-empty"]{width:44px;transform:scaleX(0
     }
     function shareText() {
       if (!current) return '';
-      return 'Will it fit? ' + (current.item ? current.item + ': ' : '') + current.r.v + ' ' + current.r.d + '\n' + doc.title;
+      // deck: "Copies: Will it fit? [item]: [verdict] [line]" (an empty submit has no item, so no "item: ")
+      return 'Will it fit? ' + (current.item ? current.item + ': ' : '') + current.r.v + ' ' + current.r.d;
     }
 
     /* ---------- Wiring ---------- */
