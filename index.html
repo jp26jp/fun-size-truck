@@ -661,10 +661,35 @@ html.js .scroll-track .scroll-track__truck{left:2px;transform:translateX(calc(va
 /* the first screen holds the whole stage: subtract the parody line (and the header's 1px rule) too, so the
    "[reverent silence]" cue is no longer cut by the fold (the stage is laid out from the hero's middle) */
 #hero{min-height:max(calc(100svh - var(--nav-h) - var(--parody-h,30px)),720px)}
-/* balanced eyebrow: no lone "TRUCK" on its own line at phone width */
-#hero .eyebrow{text-wrap:balance}
-/* zoomed on 341-380px phones: the 1,600% buttons wrap to 2 rows, so the caption pill drops its tracking (and goes
-   to 12px under 360px) to stay on one line; its top then clears the buttons by about 25px instead of 7px
+/* short laptop screens (1366x768, 1280x720, 1024x768, down to about 700px tall): the hero follows the screen
+   down to 600px instead of stopping at 720px, so the cue and both caption lines sit above the fold. Against the
+   720px layout the copy moves down .35 x the squeeze (--hero-s) and the stage, truck and caption lines rise .35 x
+   it; those move as one (zoomed too), so the zoom pills stay beside the truck. The headline is capped at 28% of the
+   screen height so it never crowds the eyebrow. Screens 814px tall and up (1440x900) get --hero-s 0: unchanged.
+   Phones and tablets (860px and narrower, where the zoom pills sit under the buttons) keep the 720px floor. */
+@media (min-width:861px){
+  #hero{--hero-s:clamp(0px,720px - (100svh - var(--nav-h) - var(--parody-h,30px)),120px);
+    min-height:max(calc(100svh - var(--nav-h) - var(--parody-h,30px)),600px)}
+  #hero .hero-copy{translate:0 calc(.35 * var(--hero-s))}
+  #hero .hero-stage,#hero .hero-caption,#hero .hero-under{translate:0 calc(-.35 * var(--hero-s))}
+  #hero .hero-title{font-size:clamp(56px,min(17vw,28svh),240px)}
+}
+/* balanced eyebrow and subline: no lone "TRUCK" or "up." on its own line at phone width */
+#hero .eyebrow,#hero .hero-sub{text-wrap:balance}
+/* zoomed: the cue gets the same dark pill as the caption lines, so it stays readable where the giant X's lower
+   arm runs under it (1,600% on 320-360px phones) */
+#hero.is-zoomed .hero-cue{padding:2px 8px;margin-right:-8px;border-radius:10px;background:var(--stage)}
+/* zoomed on 360px phones and narrower: both buttons stay on one row (smaller type and padding). At 1,600% (and
+   at 400% under 341px) they wrapped to 2 rows and left the caption pill about 7px under them. */
+@media (max-width:360px){
+  #hero.is-zoomed .btn-row{column-gap:8px}
+  #hero.is-zoomed .btn-row .btn{padding:0 12px;font-size:14px}
+}
+@media (max-width:340px){
+  #hero.is-zoomed .btn-row .btn{padding:0 10px;font-size:13px}
+}
+/* zoomed on 361-380px phones the 1,600% buttons still wrap to 2 rows, so the caption pill drops its tracking to
+   stay on one line; its top then clears the buttons by about 25px. On 341-359px it also goes to 12px
    (340px and narrower keep style-ui's 12px rule) */
 @media (min-width:341px) and (max-width:380px){
   #hero.is-zoomed .hero-caption{letter-spacing:0;padding:4px 8px}
@@ -773,6 +798,11 @@ html.js .scroll-track .scroll-track__truck{left:2px;transform:translateX(calc(va
   #will-it-fit .meter{margin-inline:-12px}
   #will-it-fit .meter-stops li{padding:0;display:flex;flex-direction:column;align-items:center}
 }
+
+/* ---------- testimonials ---------- */
+/* Instrument Serif italic draws a 1 like an l (the time read "ll:40"), so the time is set upright in the sans face,
+   a step smaller to sit at the serif's figure height */
+#testimonials .quote .q-time{font-family:var(--font-body);font-style:normal;font-weight:400;font-size:.8em;letter-spacing:-.01em}
 
 /* Layout lane r3: faq, thank-you, one-more-thing, no-room, final-cta, footnotes, footer.
    Layout polish only; animation CSS and the will-it-fit widget live elsewhere. */
@@ -1360,8 +1390,9 @@ html header.site-header .nav-pill{font-size:12px}
 <path class="f-grass ol" d="M76 760H1524Q1540 760 1540 776V790Q1540 806 1524 806H76Q60 806 60 790V776Q60 760 76 760Z"/>
 <path class="f-grass-dark" d="M130 762l5-15l4 11l5-13l3 17ZM582 762l5-14l4 10l5-12l3 16ZM1086 762l5-15l4 11l5-13l3 17ZM1452 762l5-14l4 10l5-12l3 16ZM196 762l4-11l4 8l4-10l2 13Z"/>
 
-<!-- the route. The truck rides it by its ground-center: from the grass behind the near mound,
-     up to the apex (700,471.33) where it is drawn, over the fence, straight down behind the far mound -->
+<!-- the route: the whole plan, over the fence and down to the far mound. With motion on, the truck rides its
+     first half by its ground-center, from the grass behind the near mound up to the apex (700,471.33), where it
+     is drawn, and stays there -->
 <path data-anim="arc" class="ln dots" style="--line-w:4px" d="M420 760C430 560 560 471.33 700 471.33C1050 471.33 1190 471.33 1190 760"/>
 <!-- arrowhead at the landing, so the direction reads without the step labels (they move below on phones) -->
 <path class="f-ink ol" d="M1189.6 703L1173.4 677.6L1200.2 674.8Z"/>
@@ -1409,7 +1440,7 @@ html header.site-header .nav-pill{font-size:12px}
 </g>
 <use href="#dirt" x="240" y="656" width="260" height="104"/>
 
-<!-- far side: flag, the new mound, puff (all drawn over the truck so the set-down tucks behind them) -->
+<!-- far side: flag, the new mound and the puff, drawn as the plan's last step (the truck stays at the apex) -->
 <g data-anim="flag">
   <path class="ln" d="M1290 702V550"/>
   <path class="f-green ol" d="M1292 552L1360 568L1292 584Z"/>
@@ -2008,7 +2039,7 @@ html header.site-header .nav-pill{font-size:12px}
     <ul class="quotes">
 <li class="quote-card"><figure><svg class="avatar" viewBox="0 0 64 64" width="56" height="56" aria-hidden="true" focusable="false" style="--line-w:2px"><circle class="f-cloth1" cx="32" cy="32" r="32" opacity=".3"/><path class="f-cloth1 ol" d="M9.6 52C12 42 21 39 32 39s20 3 22.4 13A30 30 0 0 1 9.6 52z"/><circle class="f-head ol" cx="32" cy="25" r="10"/></svg><blockquote class="quote"><p>My buddy texted, “Can I borrow your truck to grab a couch?” I sent him a picture of the truck. He sent back “oh.” That was in March.</p></blockquote><figcaption class="persona">Former designated mover, now retired</figcaption></figure></li>
 <li class="quote-card"><figure><svg class="avatar" viewBox="0 0 64 64" width="56" height="56" aria-hidden="true" focusable="false" style="--line-w:2px"><circle class="f-cloth2" cx="32" cy="32" r="32" opacity=".3"/><path class="f-cloth2 ol" d="M9.6 52C12 42 21 39 32 39s20 3 22.4 13A30 30 0 0 1 9.6 52z"/><circle class="f-head ol" cx="32" cy="25" r="10"/></svg><blockquote class="quote"><p>Moved the whole dirt pile to the other side of the yard. Got to the fence, picked the truck up, set it down, kept going. The fence never stood a chance.</p></blockquote><figcaption class="persona">Homeowner, fence-adjacent</figcaption></figure></li>
-<li class="quote-card"><figure><svg class="avatar" viewBox="0 0 64 64" width="56" height="56" aria-hidden="true" focusable="false" style="--line-w:2px"><circle class="f-cloth3" cx="32" cy="32" r="32" opacity=".3"/><path class="f-cloth3 ol" d="M9.6 52C12 42 21 39 32 39s20 3 22.4 13A30 30 0 0 1 9.6 52z"/><circle class="f-head ol" cx="32" cy="25" r="10"/></svg><blockquote class="quote"><p>My in-laws landed at 11:40&nbsp;p.m. There were two of them. They knew. I was asleep.</p></blockquote><figcaption class="persona">Formerly the family airport shuttle</figcaption></figure></li>
+<li class="quote-card"><figure><svg class="avatar" viewBox="0 0 64 64" width="56" height="56" aria-hidden="true" focusable="false" style="--line-w:2px"><circle class="f-cloth3" cx="32" cy="32" r="32" opacity=".3"/><path class="f-cloth3 ol" d="M9.6 52C12 42 21 39 32 39s20 3 22.4 13A30 30 0 0 1 9.6 52z"/><circle class="f-head ol" cx="32" cy="25" r="10"/></svg><blockquote class="quote"><p>My in-laws landed at <span class="q-time">11:40&nbsp;p.m.</span> There were two of them. They knew. I was asleep.</p></blockquote><figcaption class="persona">Formerly the family airport shuttle</figcaption></figure></li>
 <li class="quote-card"><figure><svg class="avatar" viewBox="0 0 64 64" width="56" height="56" aria-hidden="true" focusable="false" style="--line-w:2px"><circle class="f-cloth4" cx="32" cy="32" r="32" opacity=".3"/><path class="f-cloth4 ol" d="M9.6 52C12 42 21 39 32 39s20 3 22.4 13A30 30 0 0 1 9.6 52z"/><circle class="f-head ol" cx="32" cy="25" r="10"/></svg><blockquote class="quote"><p>I read the fine print. I ride with Grandma now.</p></blockquote><figcaption class="persona">Kid #2 · real seat, real seatbelt</figcaption></figure></li>
     </ul>
     <p class="fine">Owners are fictional. The relief is real.</p>
@@ -2303,18 +2334,6 @@ html header.site-header .nav-pill{font-size:12px}
     return a;
   }
 
-  /* A label pop that keeps the element's own CSS transform (art.css centers labels with translate). */
-  function pop(el, opts, from) {
-    if (!el || !motion()) return null;
-    var base = win.getComputedStyle(el).transform;
-    base = (!base || base === 'none') ? '' : base + ' ';
-    return play(el, [
-      { transform: base + 'scale(' + (from || 0.6) + ')', opacity: 0 },
-      { transform: base + 'scale(1.06)', opacity: 1, offset: 0.7 },
-      { transform: base + 'scale(1)', opacity: 1 }
-    ], assign({ duration: 380, easing: 'ease-out' }, opts));
-  }
-
   /* Run fn once, the first time el is meaningfully on screen. Off-screen scenes do no work. */
   var steps20 = [];
   for (var s20 = 0; s20 <= 20; s20++) steps20.push(s20 / 20);
@@ -2514,14 +2533,16 @@ html header.site-header .nav-pill{font-size:12px}
     }, { ratio: 0.4 });
   }
 
-  /* ---------- fence-mode: lift along the dotted arc, set-down, 3-dot puff, Delivered. flag ---------- */
+  /* ---------- fence-mode: up the dotted arc from the near pile, over the fence, and it stays up there ----------
+     The drawing is the end state: the truck held overhead at the top of the arc. The motion starts the truck on
+     the near side behind the dirt, lifts it along the arc and stops at the apex with one small knees-and-truck
+     settle. There is no set-down, so the flag, puff and labels the drawing shows simply stay put. */
   function fence() {
     var sec = qs('#fence-mode');
     var fig = sec && qs('[data-art="fence-lift"]', sec);
     if (!fig) return;
     var arc = qs('[data-anim="arc"]', fig), truck = qs('[data-anim="truck"]', fig);
-    var lifter = qs('[data-anim="lifter"]', fig), puff = qs('[data-anim="puff"]', fig);
-    var flag = qs('[data-anim="flag"]', fig), label = qs('[data-anim="flag-label"]', fig);
+    var lifter = qs('[data-anim="lifter"]', fig);
     var btn = qs('[data-replay="fence-lift"]', sec), cap = qs('[data-anim="replay-caption"]', sec);
     if (!arc || !truck || typeof arc.getPointAtLength !== 'function') return;
     var REST_X = 700, REST_Y = 471.33; // the truck's ground-center in the at-rest (apex) drawing
@@ -2529,12 +2550,21 @@ html header.site-header .nav-pill{font-size:12px}
       var p = arc.getPointAtLength(s);
       return 'translate(' + r(p.x - REST_X) + 'px,' + r(p.y - REST_Y) + 'px)';
     };
-    var path = null;
+    // A = the arc length at the apex. x only grows along the route, so halve toward the drawing's x.
+    var A = 0, path = null;
+    var apex = function () {
+      if (A) return A;
+      var lo = 0, hi = arc.getTotalLength();
+      for (var j = 0; j < 32; j++) { var mid = (lo + hi) / 2; if (arc.getPointAtLength(mid).x < REST_X) lo = mid; else hi = mid; }
+      A = hi;
+      return A;
+    };
     var pathFrames = function () {
       if (path) return path;
-      var L = arc.getTotalLength(), n = 60;
+      var n = 40;
       path = [];
-      for (var i = 0; i <= n; i++) path.push({ transform: at(L * i / n), offset: i / n });
+      for (var i = 0; i < n; i++) path.push({ transform: at(apex() * i / n), offset: i / n });
+      path.push({ transform: 'translate(0px,0px)', offset: 1 }); // the last frame is the drawing itself
       return path;
     };
     var anims = [], played = false, stepTimer = 0;
@@ -2545,47 +2575,31 @@ html header.site-header .nav-pill{font-size:12px}
       win.clearTimeout(stepTimer);
       truck.style.transform = '';
       var add = function (a) { if (a) anims.push(a); };
-      var T0 = 300 * k, LIFT = 1600 * k, DOWN = T0 + LIFT;
-      add(play(truck, pathFrames(), { duration: LIFT, delay: T0, easing: 'cubic-bezier(.45,.05,.35,1)', fill: 'both' }));
-      add(play(truck, [{ opacity: 0 }, { opacity: 1 }], { duration: 220 * k, easing: 'linear' }));
-      var dip = [{ transform: 'none' }, { transform: 'translate(0,9px)', offset: 0.5 }, { transform: 'none' }];
-      add(play(lifter, dip, { duration: 420 * k, delay: Math.max(0, T0 - 160 * k), easing: 'ease-in-out', fill: 'none' }));
-      add(play(lifter, dip, { duration: 420 * k, delay: DOWN - 260 * k, easing: 'ease-in-out', fill: 'none' }));
-      // the two spill clods fall off the tailgate on the way up (drawn mid-fall at the apex) and are gone by the set-down
-      qsa('[data-anim="spill"]', truck).forEach(function (c) {
+      var T0 = 300 * k, LIFT = 1600 * k, TOP = T0 + LIFT; // deck.json: a 1.6s lift along the dotted arc
+      // fill backwards: the near-side start holds until the lift begins; when it ends, the drawing takes over
+      add(play(truck, pathFrames(), { duration: LIFT, delay: T0, easing: 'cubic-bezier(.45,.05,.35,1)' }));
+      // knees bend to pick it up, then once more as it arrives overhead, and the truck settles with the palms.
+      // fill none, so a dip waiting for its turn never holds the truck or the lifter still.
+      var dip = function (d) { return [{ transform: 'none' }, { transform: 'translate(0,' + d + 'px)', offset: 0.45 }, { transform: 'none' }]; };
+      add(play(lifter, dip(9), { duration: 420 * k, delay: Math.max(0, T0 - 160 * k), easing: 'ease-in-out', fill: 'none' }));
+      add(play(lifter, dip(6), { duration: 380 * k, delay: TOP, easing: 'ease-in-out', fill: 'none' }));
+      add(play(truck, dip(6), { duration: 380 * k, delay: TOP, easing: 'ease-in-out', fill: 'none' }));
+      // the two spill clods tip off the tailgate on the way up and fall to where the drawing has them, mid-fall
+      qsa('[data-anim="spill"]', truck).forEach(function (c, i) {
+        var from = i ? 'translate(10px,-38px)' : 'translate(4px,-14px)', go = i ? 0.5 : 0.7;
         add(play(c, [
-          { opacity: 0, transform: 'translate(4px,-10px)' },
-          { opacity: 0, transform: 'translate(4px,-10px)', offset: 0.3 },
-          { opacity: 1, transform: 'none', offset: 0.45 },
-          { opacity: 1, transform: 'translate(-2px,8px)', offset: 0.62 },
-          { opacity: 0, transform: 'translate(-6px,34px)', offset: 0.85 },
-          { opacity: 0, transform: 'translate(-6px,34px)' }
-        ], { duration: LIFT, delay: T0, easing: 'linear', fill: 'both' }));
+          { opacity: 0, transform: from },
+          { opacity: 0, transform: from, offset: go },
+          { opacity: 1, transform: from, offset: go + 0.06, easing: 'cubic-bezier(.55,0,1,.45)' },
+          { opacity: 1, transform: 'none' }
+        ], { duration: LIFT, delay: T0, easing: 'linear' }));
       });
-      qsa('circle', puff).forEach(function (c, i) {
-        boxOrigin(c);
-        add(play(c, [
-          { transform: 'translate(8px,7px) scale(0)' },
-          { transform: 'translate(-1px,-1px) scale(1.2)', offset: 0.65 },
-          { transform: 'none' }
-        ], { duration: 380 * k, delay: DOWN + 40 * k + i * 110 * k, easing: 'ease-out' }));
-      });
-      if (flag) {
-        svgOrigin(flag, 1290, 702); // the pole's foot, so it pops up out of the mound
-        add(play(flag, [
-          { transform: 'scaleY(0)' },
-          { transform: 'scaleY(1.12)', offset: 0.6 },
-          { transform: 'scaleY(.96)', offset: 0.82 },
-          { transform: 'none' }
-        ], { duration: 520 * k, delay: DOWN + 420 * k, easing: 'ease-out' }));
-      }
-      add(pop(label, { delay: DOWN + 680 * k, duration: 380 * k }));
-      if (replay && cap) add(play(cap, [{ opacity: 0 }, { opacity: 1 }], { duration: 450 * k, delay: DOWN + 950 * k, easing: 'ease-out' }));
+      if (replay && cap) add(play(cap, [{ opacity: 0 }, { opacity: 1 }], { duration: 450 * k, delay: TOP + 400 * k, easing: 'ease-out' }));
     };
-    // Reduced motion: the replay shows three stills (load, lift, delivered) with no tween between them.
+    // Reduced motion: the replay shows three stills (loaded, halfway up, overhead) with no tween between them,
+    // and ends on the drawing.
     var stills = function () {
-      var L = arc.getTotalLength();
-      var shots = [at(0), 'none', at(L)];
+      var shots = [at(0), at(apex() / 2), ''];
       var i = 0;
       win.clearTimeout(stepTimer);
       (function next() {
